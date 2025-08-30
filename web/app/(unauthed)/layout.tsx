@@ -1,14 +1,8 @@
-import { getServerUser } from '@/lib/auth'
-import { redirect } from 'next/navigation'
-
 export default async function UnauthedLayout({
   children,
 }: {
   children: React.ReactNode
 }) {
-  const user = await getServerUser()
-  if (user) redirect('/chats')
-
   return (
     <>
       <main className="relative z-10 min-h-screen flex flex-col items-center justify-center">

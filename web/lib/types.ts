@@ -7,6 +7,12 @@ export type User = {
 
 export type AuthResult = { ok: true } | { ok: false; error: string }
 
+export const TokenResponseSchema = z
+  .object({
+    valid: z.boolean(),
+  })
+  .loose()
+
 export const JwtPayloadSchema = z.object({
   id: z.string(),
   username: z.string(),

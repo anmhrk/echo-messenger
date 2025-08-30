@@ -4,7 +4,7 @@ import { PenBoxIcon, Search } from 'lucide-react'
 import { Button } from './ui/button'
 import { Input } from './ui/input'
 import { useState } from 'react'
-import { Chat } from '@/lib/types'
+import type { Chat } from '@/lib/types'
 import Settings from './Settings'
 
 export default function ChatsList() {
