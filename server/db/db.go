@@ -27,8 +27,25 @@ func InitDB() {
 
 	db.AddQueryHook(bundebug.NewQueryHook(bundebug.WithVerbose(true)))
 
-	// Create the users table
+	// TODO: add db pooling connections
+
+	// Create tables
 	_, err := db.NewCreateTable().Model((*User)(nil)).IfNotExists().Exec(ctx)
+	if err != nil {
+		panic(err)
+	}
+
+	_, err = db.NewCreateTable().Model((*Chat)(nil)).IfNotExists().Exec(ctx)
+	if err != nil {
+		panic(err)
+	}
+
+	_, err = db.NewCreateTable().Model((*Message)(nil)).IfNotExists().Exec(ctx)
+	if err != nil {
+		panic(err)
+	}
+
+	_, err = db.NewCreateTable().Model((*ChatParticipant)(nil)).IfNotExists().Exec(ctx)
 	if err != nil {
 		panic(err)
 	}

@@ -5,21 +5,23 @@ import (
 	"os"
 
 	"github.com/anmhrk/echo/server/auth"
-	appdb "github.com/anmhrk/echo/server/db"
+	"github.com/anmhrk/echo/server/db"
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/middleware/cors"
 	"github.com/gofiber/fiber/v2/middleware/healthcheck"
+	"github.com/gofiber/fiber/v2/middleware/logger"
 	"github.com/joho/godotenv"
 )
 
 func main() {
 	godotenv.Load()
 
-	appdb.InitDB()
+	db.InitDB()
 
 	app := fiber.New()
 
 	app.Use(healthcheck.New())
+	app.Use(logger.New())
 
 	app.Use(cors.New(cors.Config{
 		AllowOrigins: os.Getenv("FRONTEND_URL"),

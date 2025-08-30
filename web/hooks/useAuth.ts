@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react'
 import Cookies from 'js-cookie'
 import { decodeJwt } from 'jose'
 import { fetcher } from '@/lib/utils'
+import { useRouter } from 'next/navigation'
 
 const TOKEN_COOKIE = 'auth_token'
 
@@ -39,6 +40,7 @@ export function useAuth() {
   const [isAuthenticated, setIsAuthenticated] = useState(false)
   const [isLoading, setIsLoading] = useState(true)
   const [user, setUser] = useState<User>(null)
+  const router = useRouter()
 
   useEffect(() => {
     async function verifyExistingToken() {
@@ -142,6 +144,7 @@ export function useAuth() {
     clearToken()
     setIsAuthenticated(false)
     setUser(null)
+    router.push('/auth')
   }
 
   function getAuthToken(): string | undefined {

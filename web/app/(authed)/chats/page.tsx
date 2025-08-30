@@ -5,7 +5,7 @@ import { useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 
 export default function ChatsPage() {
-  const { isAuthenticated, isLoading, user } = useAuth()
+  const { isAuthenticated, isLoading } = useAuth()
   const router = useRouter()
 
   useEffect(() => {
@@ -18,5 +18,9 @@ export default function ChatsPage() {
     return null
   }
 
-  return <div>Hello, {user?.id}</div>
+  return (
+    <div className="flex-1 text-center items-center justify-center text-muted-foreground text-sm bg-muted hidden md:flex">
+      No chat selected.
+    </div>
+  )
 }
