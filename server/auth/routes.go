@@ -3,7 +3,6 @@ package auth
 import (
 	"context"
 	"database/sql"
-	"strings"
 
 	appdb "github.com/anmhrk/echo/server/db"
 	"github.com/gofiber/fiber/v2"
@@ -87,20 +86,11 @@ func RegisterAuthRoutes(app *fiber.App) {
 		})
 	})
 
-	g.Get("/token", func(c *fiber.Ctx) error {
-		auth := c.Get("Authorization")
-		if !strings.HasPrefix(strings.ToLower(auth), "bearer ") {
-			return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "missing bearer token"})
-		}
-		tokenString := strings.TrimSpace(auth[len("Bearer "):])
-		claims, err := VerifyToken(tokenString)
-		if err != nil {
-			return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{"error": err.Error()})
-		}
+	g.Get("/token", RequireAuth(), func(c *fiber.Ctx) error {
+		// RequireAuth middleware already validates the token
+		// so we just return a valid response
 		return c.JSON(fiber.Map{
-			"valid":    true,
-			"username": claims.Username,
-			"exp":      claims.ExpiresAt,
+			"valid": true,
 		})
 	})
 }

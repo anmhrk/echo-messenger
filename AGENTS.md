@@ -17,6 +17,7 @@
 - Break down UI elements into components and put them in the `components` directory.
 - Use bun and bunx for package management in the Next.js app.
 - Never start the dev server with `bun run dev` or any other command. The user already has a dev server running.
+- Use the `fetcher` function in lib/utils.ts for all API requests.
 
 ### Server
 

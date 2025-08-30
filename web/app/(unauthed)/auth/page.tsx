@@ -11,8 +11,7 @@ import { z } from 'zod'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
-import { fetcher } from '@/lib/utils'
-import Cookies from 'js-cookie'
+import { AuthResult, useAuth } from '@/hooks/useAuth'
 
 const authSchema = z.object({
   username: z.string().min(4, 'Username must be at least 4 characters'),
@@ -32,28 +31,27 @@ export default function AuthPage() {
   })
   const [isLoading, setIsLoading] = useState(false)
   const [isLogin, setIsLogin] = useState(true)
+  const { signIn, signUp } = useAuth()
 
   const onSubmit: SubmitHandler<AuthFormData> = async (data) => {
-    try {
-      setIsLoading(true)
+    setIsLoading(true)
 
-      const res = await fetcher(isLogin ? '/auth/login' : '/auth/register', {
-        method: 'POST',
-        body: JSON.stringify(data),
-      })
-
-      if (res.error) {
-        toast.error(res.error)
-        return
-      }
-
-      Cookies.set('token', res.token)
-      router.push('/chats')
-    } catch (error) {
-      toast.error(error instanceof Error ? error.message : 'Failed to login')
-    } finally {
-      setIsLoading(false)
+    let res: AuthResult
+    if (isLogin) {
+      res = await signIn(data)
+    } else {
+      res = await signUp(data)
     }
+
+    if (res.ok) {
+      router.push('/chats')
+    } else {
+      toast.error(res.error)
+      setIsLoading(false)
+      return
+    }
+
+    setIsLoading(false)
   }
 
   return (

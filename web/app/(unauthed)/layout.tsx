@@ -1,8 +1,27 @@
+'use client'
+
+import { useAuth } from '@/hooks/useAuth'
+import { useRouter } from 'next/navigation'
+import { useEffect } from 'react'
+
 export default function UnauthedLayout({
   children,
 }: {
   children: React.ReactNode
 }) {
+  const { isAuthenticated, isLoading } = useAuth()
+  const router = useRouter()
+
+  useEffect(() => {
+    if (isAuthenticated && !isLoading) {
+      router.push('/chats')
+    }
+  }, [isAuthenticated, isLoading, router])
+
+  if (isAuthenticated || isLoading) {
+    return null
+  }
+
   return (
     <>
       <main className="relative z-10 min-h-screen flex flex-col items-center justify-center">

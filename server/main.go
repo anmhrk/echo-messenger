@@ -5,6 +5,7 @@ import (
 	"os"
 
 	"github.com/anmhrk/echo/server/auth"
+	appdb "github.com/anmhrk/echo/server/db"
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/middleware/cors"
 	"github.com/gofiber/fiber/v2/middleware/healthcheck"
@@ -12,19 +13,22 @@ import (
 )
 
 func main() {
-    godotenv.Load()
-    
-    app := fiber.New()
+	godotenv.Load()
 
-    app.Use(healthcheck.New())
+	appdb.InitDB()
 
-    app.Use(cors.New(cors.Config{
-        AllowOrigins: os.Getenv("FRONTEND_URL"),
-        AllowHeaders: "Origin, Content-Type, Accept",
-    }))
+	app := fiber.New()
 
-    // Auth routes
-    auth.RegisterAuthRoutes(app)
+	app.Use(healthcheck.New())
 
-    log.Fatal(app.Listen(":3001"))
+	app.Use(cors.New(cors.Config{
+		AllowOrigins: os.Getenv("FRONTEND_URL"),
+		AllowMethods: "GET,POST,PUT,PATCH,DELETE,OPTIONS",
+		AllowHeaders: "Origin, Content-Type, Accept, Authorization",
+	}))
+
+	// Auth routes
+	auth.RegisterAuthRoutes(app)
+
+	log.Fatal(app.Listen(":3001"))
 }

@@ -33,7 +33,6 @@ func InitDB() {
 		panic(err)
 	}
 
-	// Enforce unique username at the DB level
 	if _, err := db.NewCreateIndex().Model((*User)(nil)).Index("users_username_uindex").Column("username").Unique().IfNotExists().Exec(ctx); err != nil {
 		panic(err)
 	}
