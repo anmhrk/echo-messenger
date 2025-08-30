@@ -5,21 +5,8 @@ import Cookies from 'js-cookie'
 import { decodeJwt } from 'jose'
 import { fetcher } from '@/lib/utils'
 import { useRouter } from 'next/navigation'
-
-const TOKEN_COOKIE = 'auth_token'
-
-export type AuthResult = { ok: true } | { ok: false; error: string }
-
-type JwtPayload = {
-  id?: string
-  username?: string
-  exp?: number // seconds since epoch
-}
-
-type User = {
-  id: string
-  username: string
-} | null
+import { TOKEN_COOKIE } from '@/lib/constants'
+import type { User, AuthResult, JwtPayload } from '@/lib/types'
 
 function saveToken(token: string) {
   const payload = decodeJwt(token) as JwtPayload
@@ -37,45 +24,21 @@ function clearToken() {
 }
 
 export function useAuth() {
-  const [isAuthenticated, setIsAuthenticated] = useState(false)
-  const [isLoading, setIsLoading] = useState(true)
   const [user, setUser] = useState<User>(null)
   const router = useRouter()
 
   useEffect(() => {
-    async function verifyExistingToken() {
-      const token = Cookies.get(TOKEN_COOKIE)
-      if (!token) {
-        setIsAuthenticated(false)
-        setUser(null)
-        setIsLoading(false)
-        return
-      }
-
-      try {
-        setIsLoading(true)
-        const res = await fetcher('/auth/token', { method: 'GET' }, token)
-        if (res && res.valid) {
-          setIsAuthenticated(true)
-          const payload = saveToken(token)
-          if (payload?.id && payload?.username) {
-            setUser({ id: payload.id, username: payload.username })
-          }
-        } else {
-          clearToken()
-          setIsAuthenticated(false)
-          setUser(null)
-        }
-      } catch {
-        clearToken()
-        setIsAuthenticated(false)
-        setUser(null)
-      } finally {
-        setIsLoading(false)
-      }
+    const token = Cookies.get(TOKEN_COOKIE)
+    if (!token) {
+      setUser(null)
+      return
     }
-
-    verifyExistingToken()
+    const payload = decodeJwt(token) as JwtPayload
+    if (payload?.id && payload?.username) {
+      setUser({ id: payload.id, username: payload.username })
+    } else {
+      setUser(null)
+    }
   }, [])
 
   async function signIn(creds: {
@@ -83,7 +46,6 @@ export function useAuth() {
     password: string
   }): Promise<AuthResult> {
     try {
-      setIsLoading(true)
       const res = await fetcher(
         '/auth/login',
         {
@@ -94,7 +56,6 @@ export function useAuth() {
       )
       if (res?.token) {
         const payload = saveToken(res.token)
-        setIsAuthenticated(true)
         if (payload?.id && payload?.username) {
           setUser({ id: payload.id, username: payload.username })
         }
@@ -104,8 +65,6 @@ export function useAuth() {
       return { ok: false, error }
     } catch {
       return { ok: false, error: 'Network error' }
-    } finally {
-      setIsLoading(false)
     }
   }
 
@@ -114,7 +73,6 @@ export function useAuth() {
     password: string
   }): Promise<AuthResult> {
     try {
-      setIsLoading(true)
       const res = await fetcher(
         '/auth/register',
         {
@@ -125,7 +83,6 @@ export function useAuth() {
       )
       if (res?.token) {
         const payload = saveToken(res.token)
-        setIsAuthenticated(true)
         if (payload?.id && payload?.username) {
           setUser({ id: payload.id, username: payload.username })
         }
@@ -135,14 +92,11 @@ export function useAuth() {
       return { ok: false, error }
     } catch {
       return { ok: false, error: 'Network error' }
-    } finally {
-      setIsLoading(false)
     }
   }
 
   function signOut(): void {
     clearToken()
-    setIsAuthenticated(false)
     setUser(null)
     router.push('/auth')
   }
@@ -152,8 +106,6 @@ export function useAuth() {
   }
 
   return {
-    isAuthenticated,
-    isLoading,
     user,
     signIn,
     signOut,

@@ -10,7 +10,7 @@
 - Use shadcn/ui for components. Install with `bun shadcn-add <component>` script.
 - Use zod for input validation.
 - Use Link from next/link for navigation for app routes. For external links, use <a> tag.
-- Use the `server-only` directive for any code that should ONLY run on the server. Use `use server` for any server side code that needs to be called from a server component or client component.
+- Use the `import 'server-only'` directive for any code that should ONLY run on the server. Use `use server` for any server side code that needs to be called from a server component or client component.
 - Use Image from next/image for images.
 - Prefer function over const for functions.
 - Only major components should be default exported, other components should be exported as named exports.

@@ -11,7 +11,8 @@ import { z } from 'zod'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
-import { AuthResult, useAuth } from '@/hooks/useAuth'
+import { useAuth } from '@/hooks/useAuth'
+import type { AuthResult } from '@/lib/types'
 
 const authSchema = z.object({
   username: z.string().min(4, 'Username must be at least 4 characters'),

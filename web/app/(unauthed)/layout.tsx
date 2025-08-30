@@ -1,26 +1,13 @@
-'use client'
+import { getServerUser } from '@/lib/auth'
+import { redirect } from 'next/navigation'
 
-import { useAuth } from '@/hooks/useAuth'
-import { useRouter } from 'next/navigation'
-import { useEffect } from 'react'
-
-export default function UnauthedLayout({
+export default async function UnauthedLayout({
   children,
 }: {
   children: React.ReactNode
 }) {
-  const { isAuthenticated, isLoading } = useAuth()
-  const router = useRouter()
-
-  useEffect(() => {
-    if (isAuthenticated && !isLoading) {
-      router.push('/chats')
-    }
-  }, [isAuthenticated, isLoading, router])
-
-  if (isAuthenticated || isLoading) {
-    return null
-  }
+  const user = await getServerUser()
+  if (user) redirect('/chats')
 
   return (
     <>
