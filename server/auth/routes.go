@@ -9,7 +9,7 @@ import (
 func RegisterAuthRoutes(app *fiber.App) {
     g := app.Group("/auth")
 
-    g.Post("/signup", func(c *fiber.Ctx) error {
+    g.Post("/register", func(c *fiber.Ctx) error {
         var body struct {
             Username string `json:"username"`
             Password string `json:"password"`
@@ -35,8 +35,12 @@ func RegisterAuthRoutes(app *fiber.App) {
         u := User{Username: body.Username, PasswordHash: hash}
         users[u.Username] = u
 
-        return c.Status(fiber.StatusCreated).JSON(fiber.Map{
-            "user": fiber.Map{"username": u.Username},
+        token, err := GenerateToken(u.Username)
+        if err != nil {
+            return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": "failed to generate token"})
+        }
+        return c.JSON(fiber.Map{
+            "token": token,
         })
     })
 
@@ -64,7 +68,6 @@ func RegisterAuthRoutes(app *fiber.App) {
         }
         return c.JSON(fiber.Map{
             "token": token,
-            "user":  fiber.Map{"username": u.Username},
         })
     })
 
