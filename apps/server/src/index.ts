@@ -2,7 +2,8 @@ import { Hono } from 'hono'
 import { cors } from 'hono/cors'
 import { logger } from 'hono/logger'
 import { authRoutes } from './routes/auth'
-import { chatRoutes } from './routes/chat'
+import { chatQueries } from './routes/chat.queries'
+import { chatMutations } from './routes/chat.mutations'
 import type { JwtPayload } from './auth/jwt'
 
 export type Variables = {
@@ -27,7 +28,8 @@ app.get('/', (c) => {
 })
 
 app.route('/auth', authRoutes)
-app.route('/chat', chatRoutes)
+app.route('/chat', chatQueries)
+app.route('/chat', chatMutations)
 
 export default {
   port: 3001,

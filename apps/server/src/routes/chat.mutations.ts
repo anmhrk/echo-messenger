@@ -1,9 +1,15 @@
-import { and, eq } from 'drizzle-orm'
+import { inArray, sql } from 'drizzle-orm'
 import { db } from '../db'
 import { chatParticipants, chats } from '../db/schema'
-import { chatRoutes } from './chat'
+import { Hono } from 'hono'
+import type { Variables } from '..'
+import { authMiddleware } from '../auth/middleware'
 
-chatRoutes.post('/create', async (c) => {
+export const chatMutations = new Hono<{ Variables: Variables }>()
+
+chatMutations.use(authMiddleware)
+
+chatMutations.post('/create', async (c) => {
   const { targetUserId } = await c.req.json()
   if (!targetUserId) {
     return c.json({ error: 'Target user ID is required' }, 400)
@@ -11,23 +17,28 @@ chatRoutes.post('/create', async (c) => {
 
   const user = c.get('user')
 
-  const existingChat = await db
-    .select()
+  // Check if a chat already exists containing both participants
+  const existing = await db
+    .select({ chatId: chatParticipants.chatId })
     .from(chatParticipants)
-    .where(
-      and(
-        eq(chatParticipants.userId, user.id),
-        eq(chatParticipants.userId, targetUserId)
-      )
-    )
+    .where(inArray(chatParticipants.userId, [user.id, targetUserId]))
+    .groupBy(chatParticipants.chatId)
+    .having(sql`count(*) = 2`)
+    .limit(1)
 
-  if (existingChat) {
-    return c.json({ error: 'Chat already exists with this user' }, 400)
+  if (existing.length > 0) {
+    return c.json(
+      {
+        error: 'Chat already exists with this user',
+        chatId: existing[0].chatId,
+      },
+      400
+    )
   }
 
-  await db.transaction(async (tx) => {
-    const chatId = crypto.randomUUID()
+  const chatId = crypto.randomUUID()
 
+  await db.transaction(async (tx) => {
     await tx.insert(chats).values({
       id: chatId,
     })
@@ -40,4 +51,6 @@ chatRoutes.post('/create', async (c) => {
       }))
     )
   })
+
+  return c.json({ chatId })
 })

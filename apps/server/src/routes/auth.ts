@@ -75,8 +75,8 @@ authRoutes.post('/register', async (c) => {
 authRoutes.get('/token', authMiddleware, async (c) => {
   const payload = c.get('user')
   if (!payload) {
-    return c.json({ error: 'Unauthorized' }, 401)
+    return c.json({ valid: false }, 401)
   }
 
-  return c.json({ payload })
+  return c.json({ valid: true })
 })

@@ -19,6 +19,7 @@
     "@types/bun": "latest",
     "@types/pg": "^8.15.5",
     "dotenv": "^17.2.1",
-    "drizzle-kit": "^0.31.4"
+    "drizzle-kit": "^0.31.4",
+    "typescript": "^5"
   }
 }

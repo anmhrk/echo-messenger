@@ -1,10 +1,16 @@
 import { db } from '../db'
-import { chatRoutes } from './chat'
 import { eq, ilike, and, not } from 'drizzle-orm'
 import { users as usersTable } from '../db/schema'
+import { authMiddleware } from '../auth/middleware'
+import { Hono } from 'hono'
+import type { Variables } from '..'
 
-chatRoutes.get('/search-users', async (c) => {
-  const { query } = c.req.query()
+export const chatQueries = new Hono<{ Variables: Variables }>()
+
+chatQueries.use(authMiddleware)
+
+chatQueries.get('/search-users', async (c) => {
+  const query = c.req.query('query')
   if (!query) {
     return c.json({ error: 'Query is required' }, 400)
   }
@@ -13,7 +19,10 @@ chatRoutes.get('/search-users', async (c) => {
   const lowercaseQuery = query.toLowerCase()
 
   const users = await db
-    .select()
+    .select({
+      id: usersTable.id,
+      username: usersTable.username,
+    })
     .from(usersTable)
     .where(
       and(
@@ -23,5 +32,5 @@ chatRoutes.get('/search-users', async (c) => {
     )
     .limit(20)
 
-  return c.json(users)
+  return c.json({ users })
 })

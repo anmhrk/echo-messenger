@@ -1,7 +1,7 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import Cookies from '@/node_modules/@types/js-cookie'
+import Cookies from 'js-cookie'
 import { decodeJwt } from 'jose'
 import { fetcher } from '@/lib/utils'
 import { useRouter } from 'next/navigation'

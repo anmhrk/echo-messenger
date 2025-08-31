@@ -18,10 +18,12 @@ import { fetcher } from '@/lib/utils'
 import { useAuth } from '@/hooks/useAuth'
 import { toast } from 'sonner'
 import type { User } from '@/lib/types'
+import { useRouter } from 'next/navigation'
 
 export default function NewChatDialog() {
   const { getAuthToken, user } = useAuth()
   const token = getAuthToken()
+  const router = useRouter()
 
   const [open, setOpen] = useState(false)
   const [query, setQuery] = useState('')
@@ -41,24 +43,19 @@ export default function NewChatDialog() {
     enabled: !!debouncedQuery && !!token && open,
     queryFn: async () =>
       fetcher(
-        `/chat/search-users`,
+        `/chat/search-users?query=${debouncedQuery}`,
         {
-          method: 'POST',
-          body: JSON.stringify({ username: debouncedQuery }),
+          method: 'GET',
         },
         token
       ),
-    select: (data) => {
-      const filtered = data.users.filter((u) => u.username !== user?.username)
-      return { users: filtered }
-    },
     staleTime: 30_000,
   })
 
   const createChat = useMutation<
-    { chat?: { id: number }; error?: string },
+    { chatId?: string; error?: string },
     unknown,
-    { username: string }
+    { targetUserId: string }
   >({
     mutationKey: ['create-chat'],
     mutationFn: async (payload) =>
@@ -72,6 +69,13 @@ export default function NewChatDialog() {
       ),
     onSuccess: (res) => {
       if (res?.error) {
+        // If chat already exists, redirect to it
+        if (res.chatId) {
+          router.push(`/chats/${res.chatId}`)
+          setOpen(false)
+          setQuery('')
+          setDebouncedQuery('')
+        }
         toast.error(res.error)
         return
       }
@@ -137,7 +141,7 @@ export default function NewChatDialog() {
                             toast.error('You cannot chat with yourself')
                             return
                           }
-                          createChat.mutate({ username: u.username })
+                          createChat.mutate({ targetUserId: u.id })
                         }}
                         className="w-full justify-start px-2"
                       >
