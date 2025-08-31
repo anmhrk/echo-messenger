@@ -1,5 +1,5 @@
 import type { Server, Socket } from 'socket.io'
-import { verifyJwt } from '../auth/jwt'
+import { auth } from '@/lib/auth'
 
 let ioRef: Server | null = null
 
@@ -8,25 +8,29 @@ export type ChatCreatedEvent = {
   participants: Array<{ id: string; username: string }>
 }
 
-export function setupWebsocket(io: Server) {
+export async function setupWebsocket(io: Server) {
   ioRef = io
 
-  io.on('connection', (socket: Socket) => {
+  io.on('connection', async (socket: Socket) => {
     console.log('socket connected', socket.id)
 
-    // Try to identify the user from the handshake token and join a user room
-    const token = (socket.handshake as any)?.auth?.token as string | undefined
-    if (token) {
-      verifyJwt(token)
-        .then((payload) => {
-          const room = userRoom(payload.id)
-          socket.join(room)
-          socket.data.user = { id: payload.id, username: payload.username }
-          console.log('socket joined room', room)
-        })
-        .catch(() => {
-          console.warn('invalid socket auth token for', socket.id)
-        })
+    const headers = new Headers()
+    for (const [key, value] of Object.entries(socket.handshake.headers)) {
+      if (value) {
+        headers.set(key, Array.isArray(value) ? value.join(', ') : value)
+      }
+    }
+
+    const session = await auth.api.getSession({
+      headers,
+    })
+
+    // Try to identify the user from the session and join a user room
+    if (session?.user) {
+      const room = userRoom(session.user.id)
+      socket.join(room)
+      socket.data.user = { id: session.user.id, username: session.user.username }
+      console.log('socket joined room', room)
     }
 
     socket.on('disconnect', () => {

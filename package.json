@@ -1,18 +1,22 @@
 {
   "name": "echo-messenger",
-  "version": "0.1.0",
   "private": true,
   "workspaces": [
     "apps/*",
     "packages/*"
   ],
-  "packageManager": "bun@1.2.20",
   "scripts": {
+    "prepare": "husky",
     "dev": "turbo dev",
     "build": "turbo build",
     "check-types": "turbo check-types",
     "format": "prettier --write \"**/*.{js,jsx,ts,tsx,json,css,md}\"",
-    "prepare": "husky"
+    "dev:web": "turbo -F web dev",
+    "dev:server": "turbo -F server dev",
+    "db:push": "turbo -F server db:push",
+    "db:studio": "turbo -F server db:studio",
+    "db:generate": "turbo -F server db:generate",
+    "db:migrate": "turbo -F server db:migrate"
   },
   "devDependencies": {
     "husky": "^9.1.7",
@@ -22,7 +26,8 @@
   },
   "lint-staged": {
     "*.{js,jsx,ts,tsx,json,css,md}": [
-      "prettier --write"
+      "bun run format"
     ]
-  }
+  },
+  "packageManager": "bun@1.2.20"
 }
