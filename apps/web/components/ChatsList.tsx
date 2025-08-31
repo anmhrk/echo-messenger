@@ -16,6 +16,7 @@ import { format, isThisYear, isToday } from 'date-fns'
 import { cn } from '@/lib/utils'
 import { Skeleton } from './ui/skeleton'
 import { usePathname } from 'next/navigation'
+import { useWebsocket } from '@/hooks/useWebsocket'
 
 export default function ChatsList() {
   const [search, setSearch] = useState('')
@@ -39,6 +40,8 @@ export default function ChatsList() {
       return parsed.chats
     },
   })
+
+  useWebsocket()
 
   const chats = useMemo(() => {
     const list = data ?? []
