@@ -80,6 +80,7 @@ export default function NewChatDialog() {
         return
       }
       toast.success('Chat created')
+      router.push(`/chats/${res.chatId}`)
       setOpen(false)
       setQuery('')
       setDebouncedQuery('')

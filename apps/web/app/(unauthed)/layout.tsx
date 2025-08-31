@@ -1,4 +1,4 @@
-export default async function UnauthedLayout({
+export default function UnauthedLayout({
   children,
 }: {
   children: React.ReactNode

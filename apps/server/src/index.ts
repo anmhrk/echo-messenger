@@ -7,6 +7,7 @@ import { chatMutations } from './routes/chat.mutations'
 import type { JwtPayload } from './auth/jwt'
 import { Server as Engine } from '@socket.io/bun-engine'
 import { Server } from 'socket.io'
+import { setupWebsocket } from './ws'
 
 export type Variables = {
   user: JwtPayload
@@ -16,13 +17,8 @@ export const io = new Server()
 const engine = new Engine()
 io.bind(engine)
 
-io.on('connection', (socket) => {
-  console.log('a user connected')
-
-  socket.on('disconnect', () => {
-    console.log('a user disconnected')
-  })
-})
+// Register websocket handlers
+setupWebsocket(io)
 
 const app = new Hono()
 
@@ -53,7 +49,7 @@ export default {
   fetch(req: Request, server: Bun.Server) {
     const url = new URL(req.url)
 
-    if (url.pathname === '/socket.io/') {
+    if (url.pathname.startsWith('/socket.io')) {
       return engine.handleRequest(req, server)
     } else {
       return app.fetch(req, server)

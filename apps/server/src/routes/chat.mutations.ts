@@ -1,9 +1,10 @@
 import { inArray, sql } from 'drizzle-orm'
 import { db } from '../db'
-import { chatParticipants, chats } from '../db/schema'
+import { chatParticipants, chats, users } from '../db/schema'
 import { Hono } from 'hono'
 import type { Variables } from '..'
 import { authMiddleware } from '../auth/middleware'
+import { emitNewChat } from '../ws'
 
 export const chatMutations = new Hono<{ Variables: Variables }>()
 
@@ -51,6 +52,15 @@ chatMutations.post('/create', async (c) => {
       }))
     )
   })
+
+  // Fetch minimal participant info (id, username) for event payload
+  const participants = await db
+    .select({ id: users.id, username: users.username })
+    .from(users)
+    .where(inArray(users.id, [user.id, targetUserId]))
+
+  // Broadcast new chat event to all connected clients
+  emitNewChat({ chatId, participants })
 
   return c.json({ chatId })
 })

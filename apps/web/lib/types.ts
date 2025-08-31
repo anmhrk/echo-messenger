@@ -44,3 +44,13 @@ export const ChatListResponseSchema = z.object({
 })
 
 export type ChatListItem = z.infer<typeof ChatListItemSchema>
+
+// WebSocket Events
+export const ChatCreatedEventSchema = z
+  .object({
+    chatId: z.string(),
+    participants: z.array(z.object({ id: z.string(), username: z.string() })),
+  })
+  .loose()
+
+export type ChatCreatedEvent = z.infer<typeof ChatCreatedEventSchema>
