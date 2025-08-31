@@ -17,6 +17,8 @@ export const chats = pgTable('chats', {
   id: text('id').primaryKey(),
   createdAt: timestamp('created_at').notNull().defaultNow(),
   updatedAt: timestamp('updated_at').notNull().defaultNow(),
+  lastMessageId: text('last_message_id'),
+  lastMessageSentAt: timestamp('last_message_sent_at'),
 })
 
 export const chatParticipants = pgTable(

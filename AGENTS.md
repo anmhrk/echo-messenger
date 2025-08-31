@@ -19,11 +19,12 @@
 - Use bun and bunx for package management in the Next.js app.
 - Never start the dev server with `bun run dev` or any other command. The user already has a dev server running.
 - Use the `fetcher` function in lib/utils.ts for all API requests.
+- Use Tanstack Query for data fetching and mutations.
 - Put types and zod schema in the lib/types.ts file.
 
 ### Server
 
 - Use POST for mutations and GET for queries. POST should also be used if body is required.
 - Structure routes using route groups and put them in one file inside routes folder.
-- Chat router is split into queries and mutations.
+- Chat router is split into a queries and mutations router both with /chat prefix.
 - Chat queries go inside chat.queries.ts and chat mutations go inside chat.mutations.ts.
