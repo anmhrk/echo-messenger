@@ -2,8 +2,8 @@
   "name": "server",
   "scripts": {
     "dev": "bun run --hot src/index.ts",
-    "start": "bun run src/index.ts",
-    "build": "bun build src/index.ts --outdir dist",
+    "start": "bun run dist/index.js",
+    "build": "bun build src/index.ts --target bun --outdir dist",
     "check-types": "tsc --noEmit",
     "db:push": "drizzle-kit push",
     "db:generate": "drizzle-kit generate",
