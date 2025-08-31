@@ -2,8 +2,7 @@
 nixPkgs = ['bun']
 
 [phases.install]
-# Install from the monorepo root where bun.lockb lives
-cmds = ['cd ../.. && bun install --frozen-lockfile']
+cmds = ['bun install --frozen-lockfile']
 
 [phases.build]
 cmds = ['bun run build']
