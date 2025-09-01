@@ -1,5 +1,3 @@
-'use client'
-
 import { useEffect, useMemo, useState } from 'react'
 import debounce from 'lodash.debounce'
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from './ui/dialog'
@@ -9,12 +7,12 @@ import { Skeleton } from './ui/skeleton'
 import { PenBoxIcon, Search } from 'lucide-react'
 import { useMutation, useQuery } from '@tanstack/react-query'
 import { toast } from 'sonner'
-import { useRouter } from 'next/navigation'
-import { trpc } from '@/lib/trpc'
-import { authClient } from '@/lib/auth-client'
+import { useRouteContext, useRouter } from '@tanstack/react-router'
+import { useTRPC } from '@/lib/utils'
 
 export default function NewChatDialog() {
-  const { data: session } = authClient.useSession()
+  const { user } = useRouteContext({ from: '__root__' })
+  const trpc = useTRPC()
   const router = useRouter()
   const [open, setOpen] = useState(false)
   const [query, setQuery] = useState('')
@@ -46,7 +44,7 @@ export default function NewChatDialog() {
     trpc.chatMutations.createChat.mutationOptions({
       onSuccess: (data) => {
         if (data?.chatId) {
-          router.push(`/chats/${data.chatId}`)
+          router.navigate({ to: '/chats/$id', params: { id: data.chatId } })
           setOpen(false)
           setQuery('')
           setDebouncedQuery('')
@@ -106,7 +104,7 @@ export default function NewChatDialog() {
                         variant="ghost"
                         size="lg"
                         onClick={() => {
-                          if (u.username === session?.user?.username) {
+                          if (u.username === user?.username) {
                             toast.error('You cannot chat with yourself')
                             return
                           }

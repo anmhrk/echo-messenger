@@ -12,8 +12,6 @@ export async function setupWebsocket(io: Server) {
   ioRef = io
 
   io.on('connection', async (socket: Socket) => {
-    console.log('socket connected', socket.id)
-
     const headers = new Headers()
     for (const [key, value] of Object.entries(socket.handshake.headers)) {
       if (value) {

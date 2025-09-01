@@ -3,3 +3,4 @@ dist
 .next
 .turbo
 .env
+apps/web/src/routeTree.gen.ts

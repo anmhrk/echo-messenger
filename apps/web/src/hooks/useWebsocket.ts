@@ -2,16 +2,17 @@ import { useEffect } from 'react'
 import { io } from 'socket.io-client'
 import { useQueryClient } from '@tanstack/react-query'
 import { ChatCreatedEventSchema } from '@/lib/ws-types'
-import { trpc } from '@/lib/trpc'
-import type { Chat } from '../../../server/src/routers/chat.queries'
+import { useTRPC } from '@/lib/utils'
+import type { Chat } from '../../../server/src/routers/chat-queries'
 import { authClient } from '@/lib/auth-client'
 
 export const useWebsocket = () => {
   const queryClient = useQueryClient()
   const { data: session } = authClient.useSession()
+  const trpc = useTRPC()
 
   useEffect(() => {
-    const socket = io(process.env.NEXT_PUBLIC_SERVER_URL, {
+    const socket = io(import.meta.env.VITE_SERVER_URL, {
       transports: ['websocket'],
       withCredentials: true,
     })
@@ -44,17 +45,18 @@ export const useWebsocket = () => {
       // Only update if the current user participates in this chat
       if (!session?.user?.id || !participants.some((p) => p.id === session.user.id)) return
 
-      // Build a ChatListItem for this client
+      // Build a Chat item for this client
       const other = participants.find((p) => p.id !== session.user.id) ?? null
       const newItem: Chat = {
         id: chatId,
         otherParticipant: other
           ? { id: other.id, username: other.username, image: null }
           : undefined,
-        lastMessageSentAt: undefined,
-        lastMessageContent: undefined,
+        lastMessageSentAt: null,
+        lastMessageContent: null,
       }
 
+      // Update the chats list
       queryClient.setQueryData<Chat[] | undefined>(queryKey, (old) => {
         const existing = old ?? []
         if (existing.some((c) => c.id === chatId)) return existing
@@ -62,6 +64,7 @@ export const useWebsocket = () => {
       })
     })
 
+    // Cleanup the socket when the component unmounts
     return () => {
       socket.close()
     }

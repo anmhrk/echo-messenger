@@ -1,33 +1,31 @@
-'use client'
-
 import { Search } from 'lucide-react'
 import { Input } from './ui/input'
 import { useMemo, useState } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import Settings from './Settings'
 import NewChatDialog from './NewChatDialog'
-import Link from 'next/link'
-import { authClient } from '@/lib/auth-client'
+import { Link, useRouteContext } from '@tanstack/react-router'
 import { Avatar, AvatarFallback, AvatarImage } from './ui/avatar'
 import { format, isThisYear, isToday } from 'date-fns'
 import { cn } from '@/lib/utils'
 import { Skeleton } from './ui/skeleton'
-import { usePathname } from 'next/navigation'
-import { trpc } from '@/lib/trpc'
+import { useLocation } from '@tanstack/react-router'
+import { useTRPC } from '@/lib/utils'
 
 export default function ChatsList() {
   const [search, setSearch] = useState('')
-  const pathname = usePathname()
-  const chatId = pathname.split('/chats/')[1]
-  const { data: session } = authClient.useSession()
+  const location = useLocation()
+  const chatId = location.pathname.split('/chats/')[1]
+  const { user } = useRouteContext({ from: '__root__' })
+  const trpc = useTRPC()
 
   const { data: chats, isLoading } = useQuery(
     trpc.chatQueries.getChats.queryOptions(
       {
-        userId: session?.user?.id ?? '',
+        userId: user?.id ?? '',
       },
       {
-        enabled: !!session?.user?.id,
+        enabled: !!user?.id,
       }
     )
   )
@@ -54,7 +52,7 @@ export default function ChatsList() {
   return (
     <div className="w-full md:w-1/4 flex-shrink-0 flex flex-col border-r border-gray-200 dark:border-zinc-800 space-y-4 p-4">
       <div className="flex items-center justify-between">
-        <Link className="text-lg font-medium cursor-pointer" href="/chats">
+        <Link className="text-lg font-medium cursor-pointer" to="/chats">
           Chats
         </Link>
         <div className="flex items-center">
@@ -89,7 +87,8 @@ export default function ChatsList() {
             {filteredChats.map((chat) => (
               <Link
                 key={chat.id}
-                href={`/chats/${chat.id}`}
+                to={`/chats/$id`}
+                params={{ id: chat.id }}
                 className={cn(
                   'block rounded-lg hover:bg-accent',
                   chat.id === chatId && 'bg-primary/10 hover:bg-primary/10'

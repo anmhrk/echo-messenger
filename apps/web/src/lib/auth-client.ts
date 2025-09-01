@@ -3,5 +3,5 @@ import { usernameClient } from 'better-auth/client/plugins'
 
 export const authClient = createAuthClient({
   plugins: [usernameClient()],
-  baseURL: process.env.NEXT_PUBLIC_SERVER_URL,
+  baseURL: import.meta.env.VITE_SERVER_URL,
 })

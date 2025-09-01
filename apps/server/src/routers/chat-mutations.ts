@@ -1,9 +1,7 @@
 import { protectedProcedure } from '../lib/trpc'
 import { z } from 'zod'
 import { db } from '../db'
-import { chatParticipants, chats, user } from '../db/schema'
-import { inArray } from 'drizzle-orm'
-import { sql } from 'drizzle-orm'
+import { chatParticipants, chats } from '../db/schema'
 import { TRPCError } from '@trpc/server'
 import { emitNewChat } from '../ws'
 
@@ -15,15 +13,12 @@ export const chatMutationsRouter = {
       })
     )
     .mutation(async ({ input, ctx }) => {
-      const existing = await db
-        .select({ chatId: chatParticipants.chatId })
-        .from(chatParticipants)
-        .where(inArray(chatParticipants.userId, [ctx.session.user.id, input.targetUserId]))
-        .groupBy(chatParticipants.chatId)
-        .having(sql`count(*) = 2`)
-        .limit(1)
+      const existingChat = await db.query.chatParticipants.findFirst({
+        where: (cp, { and, eq }) =>
+          and(eq(cp.userId, ctx.session.user.id), eq(cp.userId, input.targetUserId)),
+      })
 
-      if (existing.length > 0) {
+      if (existingChat) {
         throw new TRPCError({
           code: 'BAD_REQUEST',
           message: 'Chat already exists with this user',
@@ -47,10 +42,10 @@ export const chatMutationsRouter = {
       })
 
       // Fetch minimal participant info (id, username) for event payload
-      const participants = await db
-        .select({ id: user.id, username: user.username })
-        .from(user)
-        .where(inArray(user.id, [ctx.session.user.id, input.targetUserId]))
+      const participants = await db.query.user.findMany({
+        columns: { id: true, username: true },
+        where: (u, { inArray }) => inArray(u.id, [ctx.session.user.id, input.targetUserId]),
+      })
 
       // Broadcast new chat event to all connected clients
       emitNewChat({

@@ -1,5 +1,3 @@
-'use client'
-
 import { LogOutIcon, Moon, Settings2, Sun, TrashIcon } from 'lucide-react'
 import { useTheme } from 'next-themes'
 import { Button } from './ui/button'
@@ -11,7 +9,7 @@ import {
   DropdownMenuTrigger,
 } from './ui/dropdown-menu'
 import { authClient } from '@/lib/auth-client'
-import { useRouter } from 'next/navigation'
+import { useRouter } from '@tanstack/react-router'
 
 export default function Settings() {
   const { theme, setTheme } = useTheme()
@@ -39,7 +37,7 @@ export default function Settings() {
             authClient.signOut({
               fetchOptions: {
                 onSuccess: () => {
-                  router.push('/login')
+                  router.navigate({ to: '/login' })
                 },
               },
             })
@@ -55,7 +53,7 @@ export default function Settings() {
             authClient.deleteUser({
               fetchOptions: {
                 onSuccess: () => {
-                  router.push('/login')
+                  router.navigate({ to: '/login' })
                 },
               },
             })
