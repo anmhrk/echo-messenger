@@ -1,11 +1,7 @@
 import type { Server, Socket } from 'socket.io'
+import type { ChatCreatedEvent } from '@repo/shared/types'
 
 let ioRef: Server | null = null
-
-type ChatCreatedEvent = {
-  chatId: string
-  participants: Array<{ id: string; username: string }>
-}
 
 export async function setupWebsocket(io: Server) {
   ioRef = io

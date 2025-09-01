@@ -1,21 +1,22 @@
+'use client'
+
 import { useEffect } from 'react'
 import { io } from 'socket.io-client'
 import { useQueryClient } from '@tanstack/react-query'
-import { ChatCreatedEventSchema } from '@/lib/ws-types'
-import { useTRPC } from '@/lib/utils'
+import { ChatCreatedEventSchema } from '@repo/shared/types'
+import { trpc } from '@/lib/trpc'
 import type { Chat } from '../../../server/src/routers/chat-queries'
 import { authClient } from '@/lib/auth-client'
 
 export const useWebsocket = () => {
   const queryClient = useQueryClient()
   const { data: session } = authClient.useSession()
-  const trpc = useTRPC()
 
   useEffect(() => {
     // Only connect once we have a valid user session
     if (!session?.user?.id) return
 
-    const socket = io(import.meta.env.VITE_SERVER_URL, {
+    const socket = io(process.env.NEXT_PUBLIC_SERVER_URL, {
       transports: ['websocket'],
       withCredentials: true,
       // TODO: in the future, replace this with proper token flow or header/getSession based check

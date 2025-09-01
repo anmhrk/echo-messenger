@@ -1,14 +1,15 @@
 ## Project Structure
 
 `apps/server` - Hono + Bun server
-`apps/web` - Tanstack Start app
+`apps/web` - Next.js app
 
 ## Rules for AI Agents
 
 ### Web
 
 - Use shadcn/ui for components.
-- Use Link from @tanstack/react-router for navigation for app routes. For external links, use <a> tag.
+- Use Link from next/link for navigation for app routes. For external links, use <a> tag.
+- Use Image from next/image for images.
 - Prefer function over const for functions.
 - Only major components should be default exported, other components should be exported as named exports.
 - Break down UI elements into components and put them in the `components` directory. Use ComponentName.tsx naming convention.

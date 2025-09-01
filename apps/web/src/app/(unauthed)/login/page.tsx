@@ -1,8 +1,9 @@
-import { createFileRoute } from '@tanstack/react-router'
+'use client'
+
 import { zodResolver } from '@hookform/resolvers/zod'
 import { ArrowLeftIcon } from 'lucide-react'
-import { Link } from '@tanstack/react-router'
-import { useRouter } from '@tanstack/react-router'
+import Link from 'next/link'
+import { useRouter } from 'next/navigation'
 import { useState } from 'react'
 import { type SubmitHandler, useForm } from 'react-hook-form'
 import { toast } from 'sonner'
@@ -12,10 +13,6 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { authClient } from '@/lib/auth-client'
 
-export const Route = createFileRoute('/_unauthed/login')({
-  component: RouteComponent,
-})
-
 const loginSchema = z.object({
   usernameOrEmail: z.string().min(4, 'Username or email must be at least 4 characters'),
   password: z.string().min(8, 'Password must be at least 8 characters'),
@@ -23,7 +20,7 @@ const loginSchema = z.object({
 
 type LoginFormData = z.infer<typeof loginSchema>
 
-function RouteComponent() {
+export default function LoginPage() {
   const router = useRouter()
   const {
     register,
@@ -58,7 +55,7 @@ function RouteComponent() {
         }
       }
 
-      router.navigate({ to: '/chats' })
+      router.push('/chats')
     } catch (error) {
       toast.error(error as string)
     } finally {
@@ -69,7 +66,7 @@ function RouteComponent() {
   return (
     <div className="flex items-center justify-center min-h-screen p-4 max-w-md w-full">
       <Button variant="outline" className="absolute top-4 left-4">
-        <Link to="/" className="flex items-center gap-2">
+        <Link href="/" className="flex items-center gap-2">
           <ArrowLeftIcon className="size-4" />
           <span>Back</span>
         </Link>
@@ -119,10 +116,10 @@ function RouteComponent() {
           </form>
 
           <p className="text-left text-xs">
-            Don't have an account?{' '}
+            Don&apos;t have an account?{' '}
             <Link
               className="text-primary underline cursor-pointer hover:text-primary/80 transition-colors"
-              to="/signup"
+              href="/signup"
             >
               Create one
             </Link>

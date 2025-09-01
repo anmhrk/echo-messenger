@@ -9,7 +9,7 @@ import {
   DropdownMenuTrigger,
 } from './ui/dropdown-menu'
 import { authClient } from '@/lib/auth-client'
-import { useRouter } from '@tanstack/react-router'
+import { useRouter } from 'next/navigation'
 
 export default function Settings() {
   const { theme, setTheme } = useTheme()
@@ -37,7 +37,7 @@ export default function Settings() {
             authClient.signOut({
               fetchOptions: {
                 onSuccess: () => {
-                  router.navigate({ to: '/login' })
+                  router.push('/login')
                 },
               },
             })
@@ -53,7 +53,7 @@ export default function Settings() {
             authClient.deleteUser({
               fetchOptions: {
                 onSuccess: () => {
-                  router.navigate({ to: '/login' })
+                  router.push('/login')
                 },
               },
             })

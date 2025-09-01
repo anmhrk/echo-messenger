@@ -1,8 +1,9 @@
-import { createFileRoute } from '@tanstack/react-router'
+'use client'
+
 import { zodResolver } from '@hookform/resolvers/zod'
 import { ArrowLeftIcon } from 'lucide-react'
-import { Link } from '@tanstack/react-router'
-import { useRouter } from '@tanstack/react-router'
+import Link from 'next/link'
+import { useRouter } from 'next/navigation'
 import { useState } from 'react'
 import { type SubmitHandler, useForm } from 'react-hook-form'
 import { toast } from 'sonner'
@@ -11,10 +12,6 @@ import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { authClient } from '@/lib/auth-client'
-
-export const Route = createFileRoute('/_unauthed/signup')({
-  component: RouteComponent,
-})
 
 const signupSchema = z.object({
   email: z.email('Invalid email address'),
@@ -25,7 +22,7 @@ const signupSchema = z.object({
 
 type SignupFormData = z.infer<typeof signupSchema>
 
-function RouteComponent() {
+export default function SignupPage() {
   const router = useRouter()
   const {
     register,
@@ -51,7 +48,7 @@ function RouteComponent() {
         throw error.message
       }
 
-      router.navigate({ to: '/chats' })
+      router.push('/chats')
     } catch (error) {
       toast.error(error as string)
     } finally {
@@ -62,7 +59,7 @@ function RouteComponent() {
   return (
     <div className="flex items-center justify-center min-h-screen p-4 max-w-md w-full">
       <Button variant="outline" className="absolute top-4 left-4">
-        <Link to="/" className="flex items-center gap-2">
+        <Link href="/" className="flex items-center gap-2">
           <ArrowLeftIcon className="size-4" />
           <span>Back</span>
         </Link>
@@ -129,7 +126,7 @@ function RouteComponent() {
             Already have an account?{' '}
             <Link
               className="text-primary underline cursor-pointer hover:text-primary/80 transition-colors"
-              to="/login"
+              href="/login"
             >
               Login
             </Link>

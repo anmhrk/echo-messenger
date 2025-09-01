@@ -1,12 +1,7 @@
-import { createFileRoute } from '@tanstack/react-router'
-import { Link } from '@tanstack/react-router'
 import { MessageCircleIcon } from 'lucide-react'
+import Link from 'next/link'
 
-export const Route = createFileRoute('/_unauthed/')({
-  component: HomeComponent,
-})
-
-function HomeComponent() {
+export default function Home() {
   return (
     <div className="space-y-6 flex flex-col items-center justify-center min-h-screen">
       <MessageCircleIcon className="size-20 text-primary" />
@@ -14,7 +9,7 @@ function HomeComponent() {
         Real-time messaging app inspired by WhatsApp
       </h1>
       <Link
-        to="/login"
+        href="/login"
         className="bg-blue-500 hover:bg-blue-500/80 text-white transition-colors px-8 py-3 rounded-full font-semibold"
       >
         Sign in
