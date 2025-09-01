@@ -2,4 +2,4 @@
 nixPkgs = ['bun', 'nodejs_22']
 
 [phases.install]
-cmds = ['bun install --frozen-lockfile']
+cmds = ['bun install']
