@@ -11,10 +11,9 @@ import { useMutation, useQuery } from '@tanstack/react-query'
 import { toast } from 'sonner'
 import { useRouter } from 'next/navigation'
 import { trpc } from '@/lib/trpc'
-import { authClient } from '@/lib/auth-client'
+import type { User } from '@/lib/auth-client'
 
-export default function NewChatDialog() {
-  const { data: session } = authClient.useSession()
+export default function NewChatDialog({ user }: { user: User }) {
   const router = useRouter()
   const [open, setOpen] = useState(false)
   const [query, setQuery] = useState('')
@@ -106,7 +105,7 @@ export default function NewChatDialog() {
                         variant="ghost"
                         size="lg"
                         onClick={() => {
-                          if (u.username === session?.user?.username) {
+                          if (u.username === user.username) {
                             toast.error('You cannot chat with yourself')
                             return
                           }

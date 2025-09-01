@@ -5,22 +5,17 @@ import { io } from 'socket.io-client'
 import { useQueryClient } from '@tanstack/react-query'
 import { ChatCreatedEventSchema, MessageCreatedEventSchema } from '@repo/shared/types'
 import { trpc } from '@/lib/trpc'
-import { authClient } from '@/lib/auth-client'
 import type { GetChatsOutput, GetChatByIdOutput } from '@/lib/trpc'
+import type { User } from '@/lib/auth-client'
 
-export const useWebsocket = () => {
+export function useWebsocket(user: User) {
   const queryClient = useQueryClient()
-  const { data: session } = authClient.useSession()
 
   useEffect(() => {
-    // Only connect once we have a valid user session
-    if (!session?.user?.id) return
-
     const socket = io(process.env.NEXT_PUBLIC_SERVER_URL, {
       transports: ['websocket'],
       withCredentials: true,
-      // TODO: in the future, replace this with proper token flow or header/getSession based check
-      auth: { userId: session?.user?.id, username: session?.user?.username },
+      auth: { userId: user.id, username: user.username },
     })
 
     socket.on('connect', () => {
@@ -46,13 +41,13 @@ export const useWebsocket = () => {
       }
 
       const { chatId, participants } = parsed.data
-      const queryKey = trpc.chatQueries.getChats.queryKey({ userId: session.user.id })
+      const queryKey = trpc.chatQueries.getChats.queryKey({ userId: user.id })
 
       // Only update if the current user participates in this chat
-      if (!session?.user?.id || !participants.some((p) => p.id === session.user.id)) return
+      if (!participants.some((p) => p.id === user.id)) return
 
       // Build a Chat item for this client
-      const other = participants.find((p) => p.id !== session.user.id) ?? null
+      const other = participants.find((p) => p.id !== user.id) ?? null
       const newItem: GetChatsOutput[number] = {
         id: chatId,
         otherParticipant: other
@@ -78,10 +73,9 @@ export const useWebsocket = () => {
         return
       }
 
-      if (!session?.user?.id) return
       const { chatId, participants, message } = parsed.data
       // Only process if current user is a participant
-      if (!participants.some((p) => p.id === session.user.id)) return
+      if (!participants.some((p) => p.id === user.id)) return
 
       // Update chat detail (messages) cache
       const chatDetailKey = trpc.chatQueries.getChatById.queryKey({ chatId })
@@ -105,7 +99,7 @@ export const useWebsocket = () => {
       })
 
       // Update chat list cache
-      const chatsListKey = trpc.chatQueries.getChats.queryKey({ userId: session.user.id })
+      const chatsListKey = trpc.chatQueries.getChats.queryKey({ userId: user.id })
       queryClient.setQueryData<GetChatsOutput | undefined>(chatsListKey, (old) => {
         const list = old ? [...old] : []
         const idx = list.findIndex((c) => c.id === chatId)
@@ -119,9 +113,8 @@ export const useWebsocket = () => {
       })
     })
 
-    // Cleanup the socket when the component unmounts
     return () => {
       socket.close()
     }
-  }, [session?.user?.id])
+  }, [])
 }

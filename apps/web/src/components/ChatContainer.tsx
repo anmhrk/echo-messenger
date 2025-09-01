@@ -1,7 +1,7 @@
 'use client'
 
 import { useMutation, useQuery } from '@tanstack/react-query'
-import { trpc } from '@/lib/trpc'
+import { GetChatByIdOutput, trpc } from '@/lib/trpc'
 import { useEffect, useMemo, useState } from 'react'
 import { toast } from 'sonner'
 import { useRouter } from 'next/navigation'
@@ -9,16 +9,15 @@ import { Loader2, SmilePlus, X } from 'lucide-react'
 import { Input } from './ui/input'
 import { Avatar, AvatarFallback, AvatarImage } from './ui/avatar'
 import { Messages } from './Messages'
-import { authClient } from '@/lib/auth-client'
 import EmojiPicker, { Theme } from 'emoji-picker-react'
 import { useTheme } from 'next-themes'
 import { Popover, PopoverContent, PopoverTrigger } from './ui/popover'
 import { Button } from './ui/button'
+import { User } from 'better-auth'
 
-export default function ChatContainer({ chatId }: { chatId: string }) {
+export default function ChatContainer({ chatId, user }: { chatId: string; user: User }) {
   const router = useRouter()
   const { theme } = useTheme()
-  const { data: session } = authClient.useSession()
   const [message, setMessage] = useState('')
   const [emojiOpen, setEmojiOpen] = useState(false)
 
@@ -45,10 +44,13 @@ export default function ChatContainer({ chatId }: { chatId: string }) {
   }, [isLoading, chat, router, chatId])
 
   const otherParticipant = useMemo(() => {
-    if (!chat || !session?.user?.id) return null
-    // chatParticipants from getChatById already contain { id, username, image }
-    return chat.chatParticipants?.find((p: any) => p?.id !== session.user?.id) ?? null
-  }, [chat, session?.user?.id])
+    if (!chat) return null
+    return (
+      chat.chatParticipants?.find(
+        (p: GetChatByIdOutput['chatParticipants'][number]) => p.id !== user.id
+      ) ?? null
+    )
+  }, [chat, user.id])
 
   const sendMessage = useMutation(trpc.chatMutations.sendMessage.mutationOptions())
 
@@ -83,7 +85,7 @@ export default function ChatContainer({ chatId }: { chatId: string }) {
             </Button>
           </div>
 
-          <Messages messages={chat?.messages ?? []} currentUserId={session?.user?.id ?? ''} />
+          <Messages messages={chat?.messages ?? []} currentUserId={user.id ?? ''} />
 
           <div className="bg-background/80 border-t border-gray-200 p-3 dark:border-zinc-800">
             <form
