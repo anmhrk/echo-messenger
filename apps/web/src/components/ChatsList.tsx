@@ -52,7 +52,7 @@ export default function ChatsList() {
   }
 
   return (
-    <div className="w-full md:w-1/4 flex-shrink-0 flex flex-col border-r border-gray-200 dark:border-zinc-800 space-y-4 p-4">
+    <div className="w-full h-full flex-shrink-0 flex flex-col border-r border-gray-200 dark:border-zinc-800 space-y-4 p-3">
       <div className="flex items-center justify-between">
         <Link className="text-lg font-medium cursor-pointer" href="/chats">
           Chats
@@ -69,7 +69,7 @@ export default function ChatsList() {
           placeholder="Search your chats..."
           value={search}
           onChange={(e) => setSearch(e.target.value)}
-          className="pl-8"
+          className="pl-8 focus-visible:ring-0"
         />
       </div>
 

@@ -80,6 +80,68 @@ export const chatQueriesRouter = {
         otherParticipant: chat.chatParticipants.find((cp) => cp.user.id !== input.userId)?.user,
       }))
     }),
+
+  getChatById: protectedProcedure
+    .input(
+      z.object({
+        chatId: z.string(),
+      })
+    )
+    .query(async ({ input, ctx }) => {
+      const chat = await db.query.chats.findFirst({
+        where: (ch, { eq, exists, and }) =>
+          and(
+            eq(ch.id, input.chatId),
+            exists(
+              db
+                .select({ one: sql`1` })
+                .from(chatParticipants)
+                .where(
+                  and(
+                    eq(chatParticipants.chatId, ch.id),
+                    eq(chatParticipants.userId, ctx.session.user.id)
+                  )
+                )
+            )
+          ),
+        with: {
+          messages: {
+            orderBy: (m, { asc }) => asc(m.sentAt),
+            with: {
+              sender: {
+                columns: {
+                  id: true,
+                  username: true,
+                  image: true,
+                },
+              },
+            },
+          },
+          chatParticipants: {
+            columns: {},
+            with: {
+              user: {
+                columns: {
+                  id: true,
+                  username: true,
+                  image: true,
+                },
+              },
+            },
+          },
+        },
+      })
+
+      if (!chat) {
+        throw new TRPCError({ code: 'NOT_FOUND', message: 'Chat not found' })
+      }
+
+      return chat
+    }),
 }
 
 export type Chat = Awaited<ReturnType<typeof chatQueriesRouter.getChats>>[number]
+
+export type ChatMessage = Awaited<
+  ReturnType<typeof chatQueriesRouter.getChatById>
+>['messages'][number]

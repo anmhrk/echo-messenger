@@ -2,14 +2,22 @@
 
 import ChatsList from '@/components/ChatsList'
 import { useWebsocket } from '@/hooks/useWebsocket'
+import { usePathname } from 'next/navigation'
 
 export default function AuthedLayout({ children }: { children: React.ReactNode }) {
-  // Call the hook to connect to the websocket when the client is mounted
+  // Connect websocket on mount
   useWebsocket()
+
+  const pathname = usePathname()
+  const isChatOpen = pathname?.startsWith('/chats/') && pathname !== '/chats'
 
   return (
     <main className="flex h-screen">
-      <ChatsList />
+      <div
+        className={(isChatOpen ? 'hidden md:block' : 'block') + ' w-full md:w-1/4 flex-shrink-0'}
+      >
+        <ChatsList />
+      </div>
       {children}
     </main>
   )
