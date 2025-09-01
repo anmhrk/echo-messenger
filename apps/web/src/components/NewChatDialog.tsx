@@ -90,7 +90,7 @@ export default function NewChatDialog() {
 
           <div className="max-h-64 overflow-y-auto">
             {isLoading ? (
-              <div className="p-3 space-y-2">
+              <div className="space-y-2">
                 {[...Array(5)].map((_, i) => (
                   <Skeleton key={i} className="h-8 w-full" />
                 ))}

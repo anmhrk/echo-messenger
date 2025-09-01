@@ -12,11 +12,12 @@ import type { TRPCOptionsProxy } from '@trpc/tanstack-react-query'
 import type { AppRouter } from '../../../server/src/routers'
 import type { User } from 'better-auth'
 import { authClient } from '../lib/auth-client'
+import { ThemeProvider } from 'next-themes'
 
 export interface RouterAppContext {
   trpc: TRPCOptionsProxy<AppRouter>
   queryClient: QueryClient
-  user: User | null | undefined
+  user: User | null
 }
 
 export const Route = createRootRouteWithContext<RouterAppContext>()({
@@ -42,13 +43,8 @@ export const Route = createRootRouteWithContext<RouterAppContext>()({
     ],
   }),
   component: RootDocument,
-  beforeLoad: async ({ context }) => {
-    const user = await context.queryClient.ensureQueryData({
-      queryKey: ['user'],
-      queryFn: getUser,
-      revalidateIfStale: true,
-    })
-
+  beforeLoad: async () => {
+    const user = await getUser()
     return { user }
   },
 })
@@ -70,10 +66,16 @@ function RootDocument() {
       <head>
         <HeadContent />
       </head>
-      <body>
-        <Outlet />
-        <Toaster richColors />
-
+      <body className="overscroll-none">
+        <ThemeProvider
+          attribute="class"
+          defaultTheme="system"
+          enableSystem
+          disableTransitionOnChange
+        >
+          <Outlet />
+          <Toaster richColors />
+        </ThemeProvider>
         <TanStackDevtools
           plugins={[
             {

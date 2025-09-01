@@ -4,6 +4,7 @@ import { db } from '../db'
 import { chatParticipants, chats } from '../db/schema'
 import { TRPCError } from '@trpc/server'
 import { emitNewChat } from '../ws'
+import { sql, inArray } from 'drizzle-orm'
 
 export const chatMutationsRouter = {
   createChat: protectedProcedure
@@ -13,12 +14,16 @@ export const chatMutationsRouter = {
       })
     )
     .mutation(async ({ input, ctx }) => {
-      const existingChat = await db.query.chatParticipants.findFirst({
-        where: (cp, { and, eq }) =>
-          and(eq(cp.userId, ctx.session.user.id), eq(cp.userId, input.targetUserId)),
-      })
+      // Check if a chat already exists that includes BOTH users via a select
+      const existing = await db
+        .select({ chatId: chatParticipants.chatId, count: sql<number>`count(*)` })
+        .from(chatParticipants)
+        .where(inArray(chatParticipants.userId, [ctx.session.user.id, input.targetUserId]))
+        .groupBy(chatParticipants.chatId)
+        .having(sql`count(*) = 2`)
+        .limit(1)
 
-      if (existingChat) {
+      if (existing.length > 0) {
         throw new TRPCError({
           code: 'BAD_REQUEST',
           message: 'Chat already exists with this user',

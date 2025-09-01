@@ -7,5 +7,5 @@ export const Route = createFileRoute('/chats/$id')({
 function RouteComponent() {
   const { id } = Route.useParams()
 
-  return <div>{id}</div>
+  return <div className="flex-1 flex-col hidden md:flex bg-muted">{id}</div>
 }

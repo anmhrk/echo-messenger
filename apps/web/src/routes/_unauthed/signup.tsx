@@ -40,16 +40,20 @@ function RouteComponent() {
     setIsLoading(true)
 
     try {
-      await authClient.signUp.email({
+      const { error } = await authClient.signUp.email({
         email: data.email,
         name: data.name,
         username: data.username,
         password: data.password,
       })
 
+      if (error) {
+        throw error.message
+      }
+
       router.navigate({ to: '/chats' })
     } catch (error) {
-      toast.error(error instanceof Error ? error.message : 'An unknown error occurred')
+      toast.error(error as string)
     } finally {
       setIsLoading(false)
     }
@@ -115,7 +119,7 @@ function RouteComponent() {
 
             <Button
               type="submit"
-              className="w-full bg-blue-500 hover:bg-blue-500/80 transition-colors font-semibold py-3 mt-6"
+              className="w-full text-white bg-blue-500 hover:bg-blue-500/80 transition-colors py-3 mt-6"
             >
               {isLoading ? 'Creating account...' : 'Create account'}
             </Button>

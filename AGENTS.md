@@ -7,7 +7,7 @@
 
 ### Web
 
-- Use shadcn/ui for components. Install with `pnpm shadcn-add <component>` script.
+- Use shadcn/ui for components.
 - Use Link from @tanstack/react-router for navigation for app routes. For external links, use <a> tag.
 - Prefer function over const for functions.
 - Only major components should be default exported, other components should be exported as named exports.

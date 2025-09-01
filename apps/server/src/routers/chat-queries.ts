@@ -19,7 +19,10 @@ export const chatQueriesRouter = {
           username: true,
         },
         where: (u, { ilike, not, eq }) =>
-          and(ilike(u.username, `%${input.query}%`), not(eq(u.id, ctx.session.user.id))),
+          and(
+            ilike(u.username, `%${input.query.split(' ').join('%')}%`),
+            not(eq(u.id, ctx.session.user.id))
+          ),
         limit: 20,
       })
     }),
@@ -63,7 +66,7 @@ export const chatQueriesRouter = {
             orderBy: (m, { desc }) => desc(m.sentAt), // pick the latest message
             limit: 1,
             columns: {
-              content: true, // will be null if no messages
+              content: true,
             },
           },
         },
@@ -73,7 +76,7 @@ export const chatQueriesRouter = {
       return raw.map((chat) => ({
         id: chat.id,
         lastMessageSentAt: chat.lastMessageSentAt,
-        lastMessageContent: chat.messages[0].content || null,
+        lastMessageContent: chat.messages[0]?.content || null,
         otherParticipant: chat.chatParticipants.find((cp) => cp.user.id !== input.userId)?.user,
       }))
     }),

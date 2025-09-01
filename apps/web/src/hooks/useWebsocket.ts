@@ -12,9 +12,14 @@ export const useWebsocket = () => {
   const trpc = useTRPC()
 
   useEffect(() => {
+    // Only connect once we have a valid user session
+    if (!session?.user?.id) return
+
     const socket = io(import.meta.env.VITE_SERVER_URL, {
       transports: ['websocket'],
       withCredentials: true,
+      // TODO: in the future, replace this with proper token flow or header/getSession based check
+      auth: { userId: session?.user?.id, username: session?.user?.username },
     })
 
     socket.on('connect', () => {
@@ -31,8 +36,8 @@ export const useWebsocket = () => {
       console.error('socket error:', err)
     })
 
-    // Handle new chat creation broadcast
     socket.on('chat:new', (payload) => {
+      console.log('chat:new', payload)
       const parsed = ChatCreatedEventSchema.safeParse(payload)
       if (!parsed.success) {
         console.error('Invalid chat:new payload', parsed.error)
@@ -40,7 +45,7 @@ export const useWebsocket = () => {
       }
 
       const { chatId, participants } = parsed.data
-      const queryKey = trpc.chatQueries.getChats.queryKey()
+      const queryKey = trpc.chatQueries.getChats.queryKey({ userId: session.user.id })
 
       // Only update if the current user participates in this chat
       if (!session?.user?.id || !participants.some((p) => p.id === session.user.id)) return
@@ -50,7 +55,7 @@ export const useWebsocket = () => {
       const newItem: Chat = {
         id: chatId,
         otherParticipant: other
-          ? { id: other.id, username: other.username, image: null }
+          ? { id: other.id, username: other.username ?? null, image: null }
           : undefined,
         lastMessageSentAt: null,
         lastMessageContent: null,

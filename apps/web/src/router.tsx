@@ -1,13 +1,12 @@
 import { createRouter as createTanStackRouter } from '@tanstack/react-router'
 import './index.css'
 import { routeTree } from './routeTree.gen'
-import { QueryCache, QueryClient, QueryClientProvider } from '@tanstack/react-query'
+import { MutationCache, QueryCache, QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { createTRPCClient, httpBatchLink } from '@trpc/client'
 import { createTRPCOptionsProxy } from '@trpc/tanstack-react-query'
 import { toast } from 'sonner'
 import type { AppRouter } from '../../server/src/routers'
 import { TRPCProvider } from './lib/utils'
-import { ThemeProvider } from './components/ThemeProvider'
 
 export const queryClient = new QueryClient({
   queryCache: new QueryCache({
@@ -22,7 +21,19 @@ export const queryClient = new QueryClient({
       })
     },
   }),
-  defaultOptions: { queries: { staleTime: 60 * 1000 } },
+  mutationCache: new MutationCache({
+    onError: (error) => {
+      toast.error(error.message, {
+        action: {
+          label: 'retry',
+          onClick: () => {
+            queryClient.invalidateQueries()
+          },
+        },
+      })
+    },
+  }),
+  defaultOptions: { queries: { staleTime: 60 * 1000, retry: false, refetchOnWindowFocus: false } },
 })
 
 const trpcClient = createTRPCClient<AppRouter>({
@@ -55,14 +66,7 @@ export const createRouter = () => {
     Wrap: ({ children }) => (
       <QueryClientProvider client={queryClient}>
         <TRPCProvider trpcClient={trpcClient} queryClient={queryClient}>
-          <ThemeProvider
-            attribute="class"
-            defaultTheme="system"
-            enableSystem
-            disableTransitionOnChange
-          >
-            {children}
-          </ThemeProvider>
+          {children}
         </TRPCProvider>
       </QueryClientProvider>
     ),
