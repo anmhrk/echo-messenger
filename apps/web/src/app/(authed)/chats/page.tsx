@@ -1,6 +1,6 @@
 export default function ChatsPage() {
   return (
-    <div className="flex-1 text-center items-center justify-center text-muted-foreground text-sm bg-muted hidden md:flex">
+    <div className="text-muted-foreground bg-muted hidden flex-1 items-center justify-center text-center text-sm md:flex">
       No chat selected.
     </div>
   )

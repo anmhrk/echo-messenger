@@ -2,20 +2,20 @@
 
 import { Avatar, AvatarFallback, AvatarImage } from './ui/avatar'
 import { cn } from '@/lib/utils'
-import { ChatMessage } from '../../../server/src/routers/chat-queries'
+import type { GetChatByIdOutput } from '@/lib/trpc'
 
 export function Messages({
   messages,
   currentUserId,
 }: {
-  messages: ChatMessage[]
+  messages: GetChatByIdOutput['messages']
   currentUserId: string
 }) {
   return (
-    <div className="flex-1 overflow-y-auto p-4 flex flex-col gap-3">
+    <div className="flex flex-1 flex-col gap-3 overflow-y-auto p-4">
       {messages.map((m) => {
         const sender = m.sender
-        const isOwn = (sender?.id ?? m.senderId) === currentUserId
+        const isOwn = (sender?.id ?? m.sender?.id) === currentUserId
         const initials = (sender?.username ?? '?').slice(0, 1).toUpperCase()
 
         return (
@@ -40,7 +40,7 @@ export function Messages({
               >
                 {m.content}
               </div>
-              <div className="text-xs text-muted-foreground mt-1">
+              <div className="text-muted-foreground mt-1 text-xs">
                 {sender?.username ?? 'Unknown User'}
               </div>
             </div>

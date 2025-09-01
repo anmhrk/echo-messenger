@@ -1,10 +1,11 @@
 import { protectedProcedure } from '../lib/trpc'
 import { z } from 'zod'
 import { db } from '../db'
-import { chatParticipants, chats } from '../db/schema'
+import { chatParticipants, chats, messages } from '../db/schema'
 import { TRPCError } from '@trpc/server'
-import { emitNewChat } from '../ws'
-import { sql, inArray } from 'drizzle-orm'
+import { emitNewChat, emitNewMessage } from '../ws'
+import { sql, inArray, eq } from 'drizzle-orm'
+import type { MessageCreatedEvent } from '@repo/shared/types'
 
 export const chatMutationsRouter = {
   createChat: protectedProcedure
@@ -62,5 +63,59 @@ export const chatMutationsRouter = {
       })
 
       return { chatId }
+    }),
+
+  sendMessage: protectedProcedure
+    .input(
+      z.object({
+        chatId: z.string(),
+        content: z.string().min(1),
+      })
+    )
+    .mutation(async ({ input, ctx }) => {
+      const now = new Date()
+      const messageId = crypto.randomUUID()
+
+      // Query participants to target WS recipients and include usernames
+      const cps = await db.query.chatParticipants.findMany({
+        where: (cp, { eq }) => eq(cp.chatId, input.chatId),
+        with: {
+          user: {
+            columns: { id: true, username: true },
+          },
+        },
+      })
+
+      const participants = cps.map((cp) => ({ id: cp.user.id, username: cp.user.username ?? null }))
+
+      const evt: MessageCreatedEvent = {
+        chatId: input.chatId,
+        participants,
+        message: {
+          id: messageId,
+          content: input.content,
+          sentAt: now.toISOString(),
+          sender: {
+            id: ctx.session.user.id,
+            username: ctx.session.user.username ?? null,
+            image: ctx.session.user.image ?? null,
+          },
+        },
+      }
+
+      // Optimistically emit before persisting
+      emitNewMessage(evt)
+
+      await db.transaction(async (tx) => {
+        await tx.insert(messages).values({
+          id: messageId,
+          chatId: input.chatId,
+          senderId: ctx.session.user.id,
+          content: input.content,
+          sentAt: now,
+        })
+
+        await tx.update(chats).set({ lastMessageSentAt: now }).where(eq(chats.id, input.chatId))
+      })
     }),
 }

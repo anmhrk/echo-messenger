@@ -1,6 +1,6 @@
 'use client'
 
-import { useQuery } from '@tanstack/react-query'
+import { useMutation, useQuery } from '@tanstack/react-query'
 import { trpc } from '@/lib/trpc'
 import { useEffect, useMemo, useState } from 'react'
 import { toast } from 'sonner'
@@ -46,22 +46,21 @@ export default function ChatContainer({ chatId }: { chatId: string }) {
 
   const otherParticipant = useMemo(() => {
     if (!chat || !session?.user?.id) return null
-    return (
-      chat.chatParticipants
-        ?.map((cp: any) => cp.user)
-        .find((u: any) => u.id !== session.user!.id) ?? null
-    )
+    // chatParticipants from getChatById already contain { id, username, image }
+    return chat.chatParticipants?.find((p: any) => p?.id !== session.user?.id) ?? null
   }, [chat, session?.user?.id])
 
+  const sendMessage = useMutation(trpc.chatMutations.sendMessage.mutationOptions())
+
   return (
-    <div className="flex-1 flex flex-col bg-muted">
+    <div className="bg-muted flex flex-1 flex-col">
       {isLoading ? (
-        <div className="flex-1 flex items-center justify-center">
+        <div className="flex flex-1 items-center justify-center">
           <Loader2 className="animate-spin" />
         </div>
       ) : (
-        <div className="flex-1 flex flex-col">
-          <div className="h-14 px-4 border-b border-gray-200 dark:border-zinc-800 flex items-center gap-3 bg-background/80">
+        <div className="flex flex-1 flex-col">
+          <div className="bg-background/80 flex h-14 items-center gap-3 border-b border-gray-200 px-4 dark:border-zinc-800">
             <div className="flex items-center gap-2">
               <Avatar className="h-9 w-9">
                 <AvatarImage
@@ -84,19 +83,29 @@ export default function ChatContainer({ chatId }: { chatId: string }) {
             </Button>
           </div>
 
-          <Messages
-            messages={(chat?.messages ?? []).map((m) => ({ ...m, sentAt: new Date(m.sentAt) }))}
-            currentUserId={session?.user?.id ?? ''}
-          />
+          <Messages messages={chat?.messages ?? []} currentUserId={session?.user?.id ?? ''} />
 
-          <div className="p-3 border-t border-gray-200 dark:border-zinc-800 bg-background/80">
-            <form onSubmit={(e) => e.preventDefault()} className="flex items-center gap-2">
+          <div className="bg-background/80 border-t border-gray-200 p-3 dark:border-zinc-800">
+            <form
+              onSubmit={(e) => {
+                e.preventDefault()
+                sendMessage.mutate({ chatId, content: message.trim() })
+                setMessage('')
+              }}
+              className="flex items-center gap-2"
+            >
               <Input
                 autoFocus
                 value={message}
                 onChange={(e) => setMessage(e.target.value)}
                 placeholder="Type a message..."
                 className="flex-1 pr-12 focus-visible:ring-0"
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter' && !e.shiftKey) {
+                    e.preventDefault()
+                    e.currentTarget.form?.requestSubmit()
+                  }
+                }}
               />
               <Popover open={emojiOpen} onOpenChange={setEmojiOpen}>
                 <PopoverTrigger asChild>
@@ -109,7 +118,7 @@ export default function ChatContainer({ chatId }: { chatId: string }) {
                     <SmilePlus className="size-5" />
                   </Button>
                 </PopoverTrigger>
-                <PopoverContent align="end" className="p-0 w-fit overflow-hidden">
+                <PopoverContent align="end" className="w-fit overflow-hidden p-0">
                   <EmojiPicker
                     lazyLoadEmojis
                     theme={theme === 'dark' ? Theme.DARK : Theme.LIGHT}

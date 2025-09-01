@@ -64,7 +64,7 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="flex items-center justify-center min-h-screen p-4 max-w-md w-full">
+    <div className="flex min-h-screen w-full max-w-md items-center justify-center p-4">
       <Button variant="outline" className="absolute top-4 left-4">
         <Link href="/" className="flex items-center gap-2">
           <ArrowLeftIcon className="size-4" />
@@ -78,7 +78,7 @@ export default function LoginPage() {
         <CardContent className="space-y-4">
           <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
             <div>
-              <label htmlFor="usernameOrEmail" className="block text-sm font-medium mb-2">
+              <label htmlFor="usernameOrEmail" className="mb-2 block text-sm font-medium">
                 Username or Email
               </label>
               <Input
@@ -88,12 +88,12 @@ export default function LoginPage() {
                 className="w-full rounded-md"
               />
               {errors.usernameOrEmail && (
-                <p className="text-red-400 text-sm mt-1">{errors.usernameOrEmail.message}</p>
+                <p className="mt-1 text-sm text-red-400">{errors.usernameOrEmail.message}</p>
               )}
             </div>
 
             <div>
-              <label htmlFor="password" className="block text-sm font-medium mb-2">
+              <label htmlFor="password" className="mb-2 block text-sm font-medium">
                 Password
               </label>
               <Input
@@ -103,13 +103,13 @@ export default function LoginPage() {
                 className="w-full rounded-md"
               />
               {errors.password && (
-                <p className="text-red-400 text-sm mt-1">{errors.password.message}</p>
+                <p className="mt-1 text-sm text-red-400">{errors.password.message}</p>
               )}
             </div>
 
             <Button
               type="submit"
-              className="w-full text-white bg-blue-500 hover:bg-blue-500/80 transition-colors py-3 mt-6"
+              className="mt-6 w-full bg-blue-500 py-3 text-white transition-colors hover:bg-blue-500/80"
             >
               {isLoading ? 'Logging in...' : 'Log in'}
             </Button>
@@ -118,7 +118,7 @@ export default function LoginPage() {
           <p className="text-left text-xs">
             Don&apos;t have an account?{' '}
             <Link
-              className="text-primary underline cursor-pointer hover:text-primary/80 transition-colors"
+              className="text-primary hover:text-primary/80 cursor-pointer underline transition-colors"
               href="/signup"
             >
               Create one

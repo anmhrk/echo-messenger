@@ -52,9 +52,9 @@ export default function ChatsList() {
   }
 
   return (
-    <div className="w-full h-full flex-shrink-0 flex flex-col border-r border-gray-200 dark:border-zinc-800 space-y-4 p-3">
+    <div className="flex h-full w-full flex-shrink-0 flex-col space-y-4 border-r border-gray-200 p-3 dark:border-zinc-800">
       <div className="flex items-center justify-between">
-        <Link className="text-lg font-medium cursor-pointer" href="/chats">
+        <Link className="cursor-pointer text-lg font-medium" href="/chats">
           Chats
         </Link>
         <div className="flex items-center">
@@ -64,7 +64,7 @@ export default function ChatsList() {
       </div>
 
       <div className="relative">
-        <Search className="absolute left-2 top-1/2 -translate-y-1/2 size-4 text-muted-foreground" />
+        <Search className="text-muted-foreground absolute top-1/2 left-2 size-4 -translate-y-1/2" />
         <Input
           placeholder="Search your chats..."
           value={search}
@@ -75,13 +75,13 @@ export default function ChatsList() {
 
       <div className="flex-1 overflow-y-auto">
         {isLoading ? (
-          <div className="gap-2 flex flex-col">
+          <div className="flex flex-col gap-2">
             {[...Array(5)].map((_, i) => (
               <Skeleton key={i} className="h-13 w-full" />
             ))}
           </div>
         ) : filteredChats.length === 0 ? (
-          <div className="flex items-center justify-center h-full text-sm text-center text-muted-foreground">
+          <div className="text-muted-foreground flex h-full items-center justify-center text-center text-sm">
             No chats found. Create one to start chatting.
           </div>
         ) : (
@@ -91,7 +91,7 @@ export default function ChatsList() {
                 key={chat.id}
                 href={`/chats/${chat.id}`}
                 className={cn(
-                  'block rounded-lg hover:bg-accent',
+                  'hover:bg-accent block rounded-lg',
                   chat.id === chatId && 'bg-primary/10 hover:bg-primary/10'
                 )}
               >
@@ -107,14 +107,14 @@ export default function ChatsList() {
                   </Avatar>
                   <div className="min-w-0 flex-1">
                     <div className="flex items-center justify-between">
-                      <div className="font-medium truncate line-clamp-1">
+                      <div className="line-clamp-1 truncate font-medium">
                         {chat.otherParticipant?.username || 'Unknown User'}
                       </div>
-                      <div className="text-xs text-muted-foreground ml-2 shrink-0">
-                        {renderLastMessageTime(chat.lastMessageSentAt ?? undefined)}
+                      <div className="text-muted-foreground ml-2 shrink-0 text-xs">
+                        {renderLastMessageTime(chat.lastMessageSentAt?.toISOString() ?? undefined)}
                       </div>
                     </div>
-                    <div className="text-sm text-muted-foreground line-clamp-2 truncate">
+                    <div className="text-muted-foreground line-clamp-2 truncate text-sm">
                       {chat.lastMessageContent || 'Say hello 👋'}
                     </div>
                   </div>

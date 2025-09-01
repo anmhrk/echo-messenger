@@ -57,7 +57,7 @@ export default function SignupPage() {
   }
 
   return (
-    <div className="flex items-center justify-center min-h-screen p-4 max-w-md w-full">
+    <div className="flex min-h-screen w-full max-w-md items-center justify-center p-4">
       <Button variant="outline" className="absolute top-4 left-4">
         <Link href="/" className="flex items-center gap-2">
           <ArrowLeftIcon className="size-4" />
@@ -71,21 +71,21 @@ export default function SignupPage() {
         <CardContent className="space-y-4">
           <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
             <div>
-              <label htmlFor="email" className="block text-sm font-medium mb-2">
+              <label htmlFor="email" className="mb-2 block text-sm font-medium">
                 Email
               </label>
               <Input id="email" type="email" {...register('email')} className="w-full rounded-md" />
-              {errors.email && <p className="text-red-400 text-sm mt-1">{errors.email.message}</p>}
+              {errors.email && <p className="mt-1 text-sm text-red-400">{errors.email.message}</p>}
             </div>
             <div>
-              <label htmlFor="name" className="block text-sm font-medium mb-2">
+              <label htmlFor="name" className="mb-2 block text-sm font-medium">
                 Name
               </label>
               <Input id="name" type="text" {...register('name')} className="w-full rounded-md" />
-              {errors.name && <p className="text-red-400 text-sm mt-1">{errors.name.message}</p>}
+              {errors.name && <p className="mt-1 text-sm text-red-400">{errors.name.message}</p>}
             </div>
             <div>
-              <label htmlFor="username" className="block text-sm font-medium mb-2">
+              <label htmlFor="username" className="mb-2 block text-sm font-medium">
                 Username
               </label>
               <Input
@@ -95,12 +95,12 @@ export default function SignupPage() {
                 className="w-full rounded-md"
               />
               {errors.username && (
-                <p className="text-red-400 text-sm mt-1">{errors.username.message}</p>
+                <p className="mt-1 text-sm text-red-400">{errors.username.message}</p>
               )}
             </div>
 
             <div>
-              <label htmlFor="password" className="block text-sm font-medium mb-2">
+              <label htmlFor="password" className="mb-2 block text-sm font-medium">
                 Password
               </label>
               <Input
@@ -110,13 +110,13 @@ export default function SignupPage() {
                 className="w-full rounded-md"
               />
               {errors.password && (
-                <p className="text-red-400 text-sm mt-1">{errors.password.message}</p>
+                <p className="mt-1 text-sm text-red-400">{errors.password.message}</p>
               )}
             </div>
 
             <Button
               type="submit"
-              className="w-full text-white bg-blue-500 hover:bg-blue-500/80 transition-colors py-3 mt-6"
+              className="mt-6 w-full bg-blue-500 py-3 text-white transition-colors hover:bg-blue-500/80"
             >
               {isLoading ? 'Creating account...' : 'Create account'}
             </Button>
@@ -125,7 +125,7 @@ export default function SignupPage() {
           <p className="text-left text-xs">
             Already have an account?{' '}
             <Link
-              className="text-primary underline cursor-pointer hover:text-primary/80 transition-colors"
+              className="text-primary hover:text-primary/80 cursor-pointer underline transition-colors"
               href="/login"
             >
               Login

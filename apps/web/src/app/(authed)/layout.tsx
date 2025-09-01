@@ -14,7 +14,7 @@ export default function AuthedLayout({ children }: { children: React.ReactNode }
   return (
     <main className="flex h-screen">
       <div
-        className={(isChatOpen ? 'hidden md:block' : 'block') + ' w-full md:w-1/4 flex-shrink-0'}
+        className={(isChatOpen ? 'hidden md:block' : 'block') + ' w-full flex-shrink-0 md:w-1/4'}
       >
         <ChatsList />
       </div>

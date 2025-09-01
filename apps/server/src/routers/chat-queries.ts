@@ -136,12 +136,26 @@ export const chatQueriesRouter = {
         throw new TRPCError({ code: 'NOT_FOUND', message: 'Chat not found' })
       }
 
-      return chat
+      return {
+        id: chat.id,
+        lastMessageContent:
+          chat.messages.find((m) => m.sentAt?.getTime?.() === chat.lastMessageSentAt?.getTime?.())
+            ?.content ?? null, // needed to update the chat list cache
+        chatParticipants: chat.chatParticipants.map((cp) => ({
+          id: cp.user.id,
+          image: cp.user.image,
+          username: cp.user.username,
+        })), // needed to send the chat detail to participating clients
+        messages: chat.messages.map((m) => ({
+          id: m.id,
+          content: m.content,
+          sentAt: m.sentAt,
+          sender: {
+            id: m.sender.id,
+            username: m.sender.username,
+            image: m.sender.image,
+          },
+        })),
+      }
     }),
 }
-
-export type Chat = Awaited<ReturnType<typeof chatQueriesRouter.getChats>>[number]
-
-export type ChatMessage = Awaited<
-  ReturnType<typeof chatQueriesRouter.getChatById>
->['messages'][number]

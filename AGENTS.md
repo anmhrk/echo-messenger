@@ -2,6 +2,7 @@
 
 `apps/server` - Hono + Bun server
 `apps/web` - Next.js app
+`packages/shared` - Mostly for shared websocket types
 
 ## Rules for AI Agents
 

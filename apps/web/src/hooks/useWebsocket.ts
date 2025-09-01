@@ -3,10 +3,10 @@
 import { useEffect } from 'react'
 import { io } from 'socket.io-client'
 import { useQueryClient } from '@tanstack/react-query'
-import { ChatCreatedEventSchema } from '@repo/shared/types'
+import { ChatCreatedEventSchema, MessageCreatedEventSchema } from '@repo/shared/types'
 import { trpc } from '@/lib/trpc'
-import type { Chat } from '../../../server/src/routers/chat-queries'
 import { authClient } from '@/lib/auth-client'
+import type { GetChatsOutput, GetChatByIdOutput } from '@/lib/trpc'
 
 export const useWebsocket = () => {
   const queryClient = useQueryClient()
@@ -53,7 +53,7 @@ export const useWebsocket = () => {
 
       // Build a Chat item for this client
       const other = participants.find((p) => p.id !== session.user.id) ?? null
-      const newItem: Chat = {
+      const newItem: GetChatsOutput[number] = {
         id: chatId,
         otherParticipant: other
           ? { id: other.id, username: other.username ?? null, image: null }
@@ -63,10 +63,59 @@ export const useWebsocket = () => {
       }
 
       // Update the chats list
-      queryClient.setQueryData<Chat[] | undefined>(queryKey, (old) => {
+      queryClient.setQueryData<GetChatsOutput | undefined>(queryKey, (old) => {
         const existing = old ?? []
         if (existing.some((c) => c.id === chatId)) return existing
         return [newItem, ...existing]
+      })
+    })
+
+    socket.on('message:new', (payload) => {
+      console.log('message:new', payload)
+      const parsed = MessageCreatedEventSchema.safeParse(payload)
+      if (!parsed.success) {
+        console.error('Invalid message:new payload', parsed.error)
+        return
+      }
+
+      if (!session?.user?.id) return
+      const { chatId, participants, message } = parsed.data
+      // Only process if current user is a participant
+      if (!participants.some((p) => p.id === session.user.id)) return
+
+      // Update chat detail (messages) cache
+      const chatDetailKey = trpc.chatQueries.getChatById.queryKey({ chatId })
+      queryClient.setQueryData<GetChatByIdOutput | undefined>(chatDetailKey, (old) => {
+        if (!old) return old
+        const next = { ...old }
+        next.messages = [
+          ...old.messages,
+          {
+            id: message.id,
+            content: message.content,
+            sentAt: new Date(message.sentAt),
+            sender: {
+              id: message.sender?.id ?? '',
+              username: message.sender?.username ?? null,
+              image: message.sender?.image ?? null,
+            },
+          },
+        ]
+        return next
+      })
+
+      // Update chat list cache
+      const chatsListKey = trpc.chatQueries.getChats.queryKey({ userId: session.user.id })
+      queryClient.setQueryData<GetChatsOutput | undefined>(chatsListKey, (old) => {
+        const list = old ? [...old] : []
+        const idx = list.findIndex((c) => c.id === chatId)
+        if (idx === -1) return list
+        const chat = { ...list[idx] }
+        chat.lastMessageContent = message.content
+        chat.lastMessageSentAt = new Date(message.sentAt)
+        // move to top
+        list.splice(idx, 1)
+        return [chat, ...list]
       })
     })
 

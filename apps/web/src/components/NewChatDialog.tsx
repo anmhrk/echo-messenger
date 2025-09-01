@@ -78,7 +78,7 @@ export default function NewChatDialog() {
 
         <div className="space-y-3">
           <div className="relative">
-            <Search className="absolute left-2 top-1/2 -translate-y-1/2 size-4 text-muted-foreground" />
+            <Search className="text-muted-foreground absolute top-1/2 left-2 size-4 -translate-y-1/2" />
             <Input
               autoFocus
               placeholder="Search users by username"
@@ -120,16 +120,16 @@ export default function NewChatDialog() {
                   ))}
                 </ul>
               ) : searchError ? (
-                <div className="p-3 text-sm text-muted-foreground text-center">
+                <div className="text-muted-foreground p-3 text-center text-sm">
                   {searchError.message}
                 </div>
               ) : (
-                <div className="p-3 text-sm text-muted-foreground text-center">
+                <div className="text-muted-foreground p-3 text-center text-sm">
                   No users found for &quot;{debouncedQuery}&quot;
                 </div>
               )
             ) : (
-              <div className="p-3 text-sm text-muted-foreground text-center">
+              <div className="text-muted-foreground p-3 text-center text-sm">
                 Type to search users…
               </div>
             )}

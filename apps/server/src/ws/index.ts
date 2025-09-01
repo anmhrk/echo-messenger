@@ -1,5 +1,5 @@
 import type { Server, Socket } from 'socket.io'
-import type { ChatCreatedEvent } from '@repo/shared/types'
+import type { ChatCreatedEvent, MessageCreatedEvent } from '@repo/shared/types'
 
 let ioRef: Server | null = null
 
@@ -26,6 +26,13 @@ export function emitNewChat(evt: ChatCreatedEvent) {
   if (!ioRef) return
   for (const p of evt.participants) {
     ioRef.to(userRoom(p.id)).emit('chat:new', evt)
+  }
+}
+
+export function emitNewMessage(evt: MessageCreatedEvent) {
+  if (!ioRef) return
+  for (const p of evt.participants) {
+    ioRef.to(userRoom(p.id)).emit('message:new', evt)
   }
 }
 
