@@ -9,9 +9,9 @@ export default async function AuthedLayout({ children }: { children: React.React
   }
 
   return (
-    <main className="flex h-screen">
+    <main className="flex h-screen min-h-0">
       <ChatsList user={user} />
-      {children}
+      <div className="flex min-h-0 min-w-0 flex-1">{children}</div>
     </main>
   )
 }

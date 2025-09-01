@@ -2,7 +2,7 @@
 
 import { useMutation, useQuery } from '@tanstack/react-query'
 import { GetChatByIdOutput, trpc } from '@/lib/trpc'
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { toast } from 'sonner'
 import { useRouter } from 'next/navigation'
 import { Loader2, SmilePlus, X } from 'lucide-react'
@@ -13,12 +13,13 @@ import EmojiPicker, { Theme } from 'emoji-picker-react'
 import { useTheme } from 'next-themes'
 import { Popover, PopoverContent, PopoverTrigger } from './ui/popover'
 import { Button } from './ui/button'
-import { User } from 'better-auth'
+import type { User } from '@/lib/auth-client'
 
 export default function ChatContainer({ chatId, user }: { chatId: string; user: User }) {
   const router = useRouter()
   const { theme } = useTheme()
   const [message, setMessage] = useState('')
+  const messageInputRef = useRef<HTMLInputElement | null>(null)
   const [emojiOpen, setEmojiOpen] = useState(false)
 
   const {
@@ -55,13 +56,13 @@ export default function ChatContainer({ chatId, user }: { chatId: string; user: 
   const sendMessage = useMutation(trpc.chatMutations.sendMessage.mutationOptions())
 
   return (
-    <div className="bg-muted flex flex-1 flex-col">
+    <div className="bg-muted dark:bg-background flex flex-1 flex-col overflow-hidden">
       {isLoading ? (
         <div className="flex flex-1 items-center justify-center">
           <Loader2 className="animate-spin" />
         </div>
       ) : (
-        <div className="flex flex-1 flex-col">
+        <div className="flex min-h-0 flex-1 flex-col">
           <div className="bg-background/80 flex h-14 items-center gap-3 border-b border-gray-200 px-4 dark:border-zinc-800">
             <div className="flex items-center gap-2">
               <Avatar className="h-9 w-9">
@@ -85,55 +86,50 @@ export default function ChatContainer({ chatId, user }: { chatId: string; user: 
             </Button>
           </div>
 
-          <Messages messages={chat?.messages ?? []} currentUserId={user.id ?? ''} />
+          <Messages messages={chat?.messages ?? []} currentUserId={user.id} />
 
-          <div className="bg-background/80 border-t border-gray-200 p-3 dark:border-zinc-800">
-            <form
-              onSubmit={(e) => {
-                e.preventDefault()
-                sendMessage.mutate({ chatId, content: message.trim() })
-                setMessage('')
+          <form
+            onSubmit={(e) => {
+              e.preventDefault()
+              sendMessage.mutate({ chatId, content: message.trim() })
+              setMessage('')
+            }}
+            className="flex items-center gap-2 px-3 pb-3"
+          >
+            <Input
+              ref={messageInputRef}
+              autoFocus
+              value={message}
+              onChange={(e) => setMessage(e.target.value)}
+              placeholder="Type a message..."
+              className="bg-background dark:bg-input/30 flex-1 pr-12 focus-visible:ring-0"
+              onKeyDown={(e) => {
+                if (e.key === 'Enter' && !e.shiftKey) {
+                  e.preventDefault()
+                  e.currentTarget.form?.requestSubmit()
+                }
               }}
-              className="flex items-center gap-2"
-            >
-              <Input
-                autoFocus
-                value={message}
-                onChange={(e) => setMessage(e.target.value)}
-                placeholder="Type a message..."
-                className="flex-1 pr-12 focus-visible:ring-0"
-                onKeyDown={(e) => {
-                  if (e.key === 'Enter' && !e.shiftKey) {
-                    e.preventDefault()
-                    e.currentTarget.form?.requestSubmit()
-                  }
-                }}
-              />
-              <Popover open={emojiOpen} onOpenChange={setEmojiOpen}>
-                <PopoverTrigger asChild>
-                  <Button
-                    type="button"
-                    size="icon"
-                    variant="outline"
-                    aria-label="Open emoji picker"
-                  >
-                    <SmilePlus className="size-5" />
-                  </Button>
-                </PopoverTrigger>
-                <PopoverContent align="end" className="w-fit overflow-hidden p-0">
-                  <EmojiPicker
-                    lazyLoadEmojis
-                    theme={theme === 'dark' ? Theme.DARK : Theme.LIGHT}
-                    width={320}
-                    onEmojiClick={(emoji) => {
-                      setMessage((prev) => prev + emoji.emoji)
-                      setEmojiOpen(false)
-                    }}
-                  />
-                </PopoverContent>
-              </Popover>
-            </form>
-          </div>
+            />
+            <Popover open={emojiOpen} onOpenChange={setEmojiOpen}>
+              <PopoverTrigger asChild>
+                <Button type="button" size="icon" variant="outline" aria-label="Open emoji picker">
+                  <SmilePlus className="size-5" />
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent align="end" className="w-fit overflow-hidden p-0">
+                <EmojiPicker
+                  lazyLoadEmojis
+                  theme={theme === 'dark' ? Theme.DARK : Theme.LIGHT}
+                  width={320}
+                  onEmojiClick={(emoji) => {
+                    setMessage((prev) => prev + emoji.emoji)
+                    messageInputRef.current?.focus()
+                    setEmojiOpen(false)
+                  }}
+                />
+              </PopoverContent>
+            </Popover>
+          </form>
         </div>
       )}
     </div>
