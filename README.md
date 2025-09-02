@@ -1,6 +1,6 @@
 # Echo Messenger
 
-A real-time messaging app inspired by WhatsApp featuring direct messages (for now). Built with Next.js 15 App Router, Bun + Hono server, and Socket.IO.
+A real-time messaging app inspired by WhatsApp featuring direct messages (for now). Built with Next.js 15 App Router, a Bun + Hono server, and Socket.IO.
 
 ## Features
 
@@ -18,7 +18,7 @@ A real-time messaging app inspired by WhatsApp featuring direct messages (for no
 - [Bun](https://bun.sh) - Fast, modern JavaScript runtime
 - [tRPC](https://trpc.io) - Type-safe RPC framework
 - [Socket.IO](https://socket.io) - Bi-directional web socket and communication library
-- [Drizzle ORM](https://orm.drizzle.team) - Type-safe database ORM
+- [Drizzle ORM](https://orm.drizzle.team) - Type-safe database ORM with built in migrations and studio
 - [PostgreSQL](https://www.postgresql.org) - Powerful, open-source relational database
 - [Better Auth](https://better-auth.com) - Modern authentication and authorization library
 - [Zod](https://zod.dev) - Type-safe data validation
@@ -91,16 +91,27 @@ bun run dev
 
 ## Deployment
 
-This project is deployed on Railway. Steps to do the same:
+This project is deployed on [Railway](https://railway.app). Steps to do the same:
 
-1. Create a PostgreSQL service and connect it to the server service.
-
-2. Create a Server service with the following settings:
+1. Create a Server service with the following settings:
    - Custom build command: `bunx turbo build -F server`
    - Custom start command: `cd apps/server && bun run start`
+
+2. Create a PostgreSQL service and connect it to the server service.
 
 3. Create a Web service with the following settings:
    - Custom build command: `npx turbo build -F web`
    - Custom start command: `cd apps/web && npm run start`
 
-The root `nixpacks.toml` file is configured to enable both the Bun and Node.js images. Bun will be used to install dependencies in both services.
+The root `nixpacks.toml` file is configured to enable both the Bun and Node.js images. Bun will be used to install dependencies for both services.
+
+## Todos
+
+- [x] DMs and basic chat creation and message flow
+- [ ] Paginate messages instead of getting all messages at once
+- [ ] Group chats
+- [ ] Ability to send images in messages
+- [ ] Update profile picture and username
+- [ ] Read receipts
+- [ ] Typing indicators
+- [ ] Emoji reactions
