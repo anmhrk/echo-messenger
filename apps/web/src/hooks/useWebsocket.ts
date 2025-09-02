@@ -5,7 +5,7 @@ import { io } from 'socket.io-client'
 import { useQueryClient } from '@tanstack/react-query'
 import { ChatCreatedEventSchema, MessageCreatedEventSchema } from '@repo/shared/types'
 import { trpc } from '@/lib/trpc'
-import type { GetChatsOutput, GetChatByIdOutput } from '@/lib/trpc'
+import type { GetAllChatsOutput, GetChatByIdOutput } from '@/lib/trpc'
 import type { User } from '@/lib/auth-client'
 
 export function useWebsocket(user: User) {
@@ -41,24 +41,24 @@ export function useWebsocket(user: User) {
       }
 
       const { chatId, participants } = parsed.data
-      const queryKey = trpc.chatQueries.getChats.queryKey({ userId: user.id })
+      const queryKey = trpc.chatQueries.getAllChats.queryKey({ userId: user.id })
 
       // Only update if the current user participates in this chat
       if (!participants.some((p) => p.id === user.id)) return
 
       // Build a Chat item for this client
       const other = participants.find((p) => p.id !== user.id) ?? null
-      const newItem: GetChatsOutput[number] = {
+      const newItem: GetAllChatsOutput[number] = {
         id: chatId,
         otherParticipant: other
-          ? { id: other.id, username: other.username ?? null, image: null }
+          ? { id: other.id, username: other.username ?? null, image: other.image ?? null }
           : undefined,
         lastMessageSentAt: null,
         lastMessageContent: null,
       }
 
       // Update the chats list
-      queryClient.setQueryData<GetChatsOutput | undefined>(queryKey, (old) => {
+      queryClient.setQueryData<GetAllChatsOutput | undefined>(queryKey, (old) => {
         const existing = old ?? []
         if (existing.some((c) => c.id === chatId)) return existing
         return [newItem, ...existing]
@@ -73,9 +73,9 @@ export function useWebsocket(user: User) {
         return
       }
 
-      const { chatId, participants, message } = parsed.data
+      const { chatId, participantIds, message } = parsed.data
       // Only process if current user is a participant
-      if (!participants.some((p) => p.id === user.id)) return
+      if (!participantIds.some((p) => p === user.id)) return
 
       // Update chat detail (messages) cache
       const chatDetailKey = trpc.chatQueries.getChatById.queryKey({ chatId })
@@ -99,8 +99,8 @@ export function useWebsocket(user: User) {
       })
 
       // Update chat list cache
-      const chatsListKey = trpc.chatQueries.getChats.queryKey({ userId: user.id })
-      queryClient.setQueryData<GetChatsOutput | undefined>(chatsListKey, (old) => {
+      const chatsListKey = trpc.chatQueries.getAllChats.queryKey({ userId: user.id })
+      queryClient.setQueryData<GetAllChatsOutput | undefined>(chatsListKey, (old) => {
         const list = old ? [...old] : []
         const idx = list.findIndex((c) => c.id === chatId)
         if (idx === -1) return list
@@ -116,5 +116,5 @@ export function useWebsocket(user: User) {
     return () => {
       socket.close()
     }
-  }, [])
+  }, [queryClient, user.id, user.username])
 }

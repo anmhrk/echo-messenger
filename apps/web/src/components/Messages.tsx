@@ -1,11 +1,11 @@
 'use client'
 
-import { Avatar, AvatarFallback, AvatarImage } from './ui/avatar'
-import { cn } from '@/lib/utils'
+import { cn, formatDate } from '@/lib/utils'
 import type { GetChatByIdOutput } from '@/lib/trpc'
 import { StickToBottom, useStickToBottomContext } from 'use-stick-to-bottom'
 import { Button } from './ui/button'
 import { ArrowDown } from 'lucide-react'
+import UserAvatar from './UserAvatar'
 
 export function Messages({
   messages,
@@ -16,45 +16,38 @@ export function Messages({
 }) {
   return (
     <StickToBottom className="relative min-h-0 flex-1" resize="smooth" initial="instant">
-      <StickToBottom.Content className="flex flex-1 flex-col gap-3 overflow-y-auto p-4">
+      <StickToBottom.Content className="mb-4 flex flex-1 flex-col gap-3 overflow-y-auto p-4">
         {messages.map((m) => {
           const sender = m.sender
           const isOwn = (sender?.id ?? m.sender?.id) === currentUserId
-          const initials = (sender?.username ?? '?').slice(0, 1).toUpperCase()
 
           return (
             <div
               key={m.id}
-              className={cn('flex items-end gap-2', isOwn ? 'justify-end' : 'justify-start')}
+              className={cn('flex flex-col gap-2', isOwn ? 'justify-end' : 'justify-start')}
             >
-              {!isOwn && (
-                <Avatar className="h-9 w-9">
-                  <AvatarImage src={sender?.image ?? undefined} alt={sender?.username ?? ''} />
-                  <AvatarFallback className="bg-primary/10 hover:bg-primary/10">
-                    {initials}
-                  </AvatarFallback>
-                </Avatar>
-              )}
-              <div className={cn('flex max-w-[75%] flex-col', isOwn ? 'items-end' : 'items-start')}>
-                <div
-                  className={cn(
-                    'rounded-2xl px-3 py-2 text-sm',
-                    isOwn ? 'bg-primary text-primary-foreground' : 'bg-accent text-foreground'
-                  )}
-                >
-                  {m.content}
+              {isOwn ? (
+                <>
+                  <p className="text-muted-foreground self-end px-1 text-xs">
+                    {formatDate(m.sentAt)}
+                  </p>
+                  <div className="bg-primary text-primary-foreground max-w-[70%] self-end rounded-xl px-3 py-2 text-sm whitespace-pre-wrap">
+                    {m.content}
+                  </div>
+                </>
+              ) : (
+                <div className="flex max-w-[60%] items-end gap-2.5">
+                  <UserAvatar image={sender?.image} />
+                  <div className="flex w-full flex-col gap-1">
+                    <div className="flex items-center gap-2 px-1">
+                      <span className="text-sm font-medium">{sender?.username ?? 'Unknown'}</span>
+                      <span className="text-muted-foreground text-xs">{formatDate(m.sentAt)}</span>
+                    </div>
+                    <div className="dark:bg-accent bg-primary/10 text-foreground self-start rounded-xl px-3 py-2 text-sm whitespace-pre-wrap">
+                      {m.content}
+                    </div>
+                  </div>
                 </div>
-                <div className="text-muted-foreground mt-1 text-xs">
-                  {sender?.username ?? 'Unknown User'}
-                </div>
-              </div>
-              {isOwn && (
-                <Avatar className="h-9 w-9">
-                  <AvatarImage src={sender?.image ?? undefined} alt={sender?.username ?? ''} />
-                  <AvatarFallback className="bg-primary/10 hover:bg-primary/10">
-                    {initials}
-                  </AvatarFallback>
-                </Avatar>
               )}
             </div>
           )

@@ -7,14 +7,13 @@ import { useQuery } from '@tanstack/react-query'
 import Settings from './Settings'
 import NewChatDialog from './NewChatDialog'
 import Link from 'next/link'
-import { Avatar, AvatarFallback, AvatarImage } from './ui/avatar'
-import { format, isThisYear, isToday } from 'date-fns'
-import { cn } from '@/lib/utils'
+import { cn, formatDate } from '@/lib/utils'
 import { Skeleton } from './ui/skeleton'
 import { usePathname } from 'next/navigation'
 import { trpc } from '@/lib/trpc'
 import { useWebsocket } from '@/hooks/useWebsocket'
 import type { User } from '@/lib/auth-client'
+import UserAvatar from './UserAvatar'
 
 export default function ChatsList({ user }: { user: User }) {
   const [search, setSearch] = useState('')
@@ -25,7 +24,7 @@ export default function ChatsList({ user }: { user: User }) {
   useWebsocket(user)
 
   const { data: chats, isLoading } = useQuery(
-    trpc.chatQueries.getChats.queryOptions({
+    trpc.chatQueries.getAllChats.queryOptions({
       userId: user.id,
     })
   )
@@ -40,14 +39,6 @@ export default function ChatsList({ user }: { user: User }) {
       return name.includes(q) || last.includes(q)
     })
   }, [chats, search])
-
-  function renderLastMessageTime(sentAt?: string) {
-    if (!sentAt) return null
-    const d = new Date(sentAt)
-    if (isToday(d)) return format(d, 'p')
-    if (isThisYear(d)) return format(d, 'MMM d')
-    return format(d, 'MMM d, yyyy')
-  }
 
   const isChatOpen = pathname?.startsWith('/chats/') && pathname !== '/chats'
 
@@ -97,24 +88,14 @@ export default function ChatsList({ user }: { user: User }) {
                   )}
                 >
                   <div className="flex items-center gap-2 px-3 py-2">
-                    <Avatar className="h-9 w-9">
-                      <AvatarImage
-                        src={chat.otherParticipant?.image ?? undefined}
-                        alt={chat.otherParticipant?.username ?? ''}
-                      />
-                      <AvatarFallback className="bg-primary/10 hover:bg-primary/10">
-                        {chat.otherParticipant?.username?.slice(0, 1).toUpperCase() || '?'}
-                      </AvatarFallback>
-                    </Avatar>
+                    <UserAvatar image={chat.otherParticipant?.image ?? null} />
                     <div className="min-w-0 flex-1">
                       <div className="flex items-center justify-between">
                         <div className="line-clamp-1 truncate font-medium">
                           {chat.otherParticipant?.username || 'Unknown User'}
                         </div>
                         <div className="text-muted-foreground ml-2 shrink-0 text-xs">
-                          {renderLastMessageTime(
-                            chat.lastMessageSentAt?.toISOString() ?? undefined
-                          )}
+                          {chat.lastMessageSentAt && formatDate(chat.lastMessageSentAt)}
                         </div>
                       </div>
                       <div className="text-muted-foreground line-clamp-2 truncate text-sm">

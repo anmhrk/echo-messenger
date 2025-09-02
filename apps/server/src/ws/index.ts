@@ -31,8 +31,8 @@ export function emitNewChat(evt: ChatCreatedEvent) {
 
 export function emitNewMessage(evt: MessageCreatedEvent) {
   if (!ioRef) return
-  for (const p of evt.participants) {
-    ioRef.to(userRoom(p.id)).emit('message:new', evt)
+  for (const p of evt.participantIds) {
+    ioRef.to(userRoom(p)).emit('message:new', evt)
   }
 }
 

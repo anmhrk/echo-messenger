@@ -2,14 +2,16 @@ import { z } from 'zod'
 
 export const ChatCreatedEventSchema = z.object({
   chatId: z.string(),
-  participants: z.array(z.object({ id: z.string(), username: z.string().nullable() })),
+  participants: z.array(
+    z.object({ id: z.string(), username: z.string().nullable(), image: z.string().nullable() })
+  ),
 })
 
 export type ChatCreatedEvent = z.infer<typeof ChatCreatedEventSchema>
 
 export const MessageCreatedEventSchema = z.object({
   chatId: z.string(),
-  participants: z.array(z.object({ id: z.string(), username: z.string().nullable() })),
+  participantIds: z.array(z.string()),
   message: z.object({
     id: z.string(),
     content: z.string(),

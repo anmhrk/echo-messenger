@@ -47,19 +47,15 @@ export const chatMutationsRouter = {
         )
       })
 
-      // Fetch minimal participant info (id, username) for event payload
       const participants = await db.query.user.findMany({
-        columns: { id: true, username: true },
+        columns: { id: true, username: true, image: true },
         where: (u, { inArray }) => inArray(u.id, [ctx.session.user.id, input.targetUserId]),
       })
 
       // Broadcast new chat event to all connected clients
       emitNewChat({
         chatId,
-        participants: participants.map((p) => ({
-          id: p.id,
-          username: p.username!,
-        })),
+        participants,
       })
 
       return { chatId }
@@ -76,21 +72,21 @@ export const chatMutationsRouter = {
       const now = new Date()
       const messageId = crypto.randomUUID()
 
-      // Query participants to target WS recipients and include usernames
-      const cps = await db.query.chatParticipants.findMany({
-        where: (cp, { eq }) => eq(cp.chatId, input.chatId),
-        with: {
-          user: {
-            columns: { id: true, username: true },
+      // Query participants to target WS recipients
+      const participantIds = (
+        await db.query.chatParticipants.findMany({
+          where: (cp, { eq }) => eq(cp.chatId, input.chatId),
+          with: {
+            user: {
+              columns: { id: true },
+            },
           },
-        },
-      })
-
-      const participants = cps.map((cp) => ({ id: cp.user.id, username: cp.user.username ?? null }))
+        })
+      ).map((cp) => cp.user.id)
 
       const evt: MessageCreatedEvent = {
         chatId: input.chatId,
-        participants,
+        participantIds,
         message: {
           id: messageId,
           content: input.content,

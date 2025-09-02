@@ -16,7 +16,7 @@ const geistMono = Geist_Mono({
 
 export const metadata: Metadata = {
   title: 'Echo Messenger',
-  description: 'Real-time messaging app inspired by WhatsApp',
+  description: 'A real-time messaging app built with Next.js, Hono, and Socket.IO',
 }
 
 export default function RootLayout({

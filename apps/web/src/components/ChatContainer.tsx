@@ -7,13 +7,13 @@ import { toast } from 'sonner'
 import { useRouter } from 'next/navigation'
 import { Loader2, SmilePlus, X } from 'lucide-react'
 import { Input } from './ui/input'
-import { Avatar, AvatarFallback, AvatarImage } from './ui/avatar'
 import { Messages } from './Messages'
 import EmojiPicker, { Theme } from 'emoji-picker-react'
 import { useTheme } from 'next-themes'
 import { Popover, PopoverContent, PopoverTrigger } from './ui/popover'
 import { Button } from './ui/button'
 import type { User } from '@/lib/auth-client'
+import UserAvatar from './UserAvatar'
 
 export default function ChatContainer({ chatId, user }: { chatId: string; user: User }) {
   const router = useRouter()
@@ -65,15 +65,7 @@ export default function ChatContainer({ chatId, user }: { chatId: string; user: 
         <div className="flex min-h-0 flex-1 flex-col">
           <div className="bg-background/80 flex h-14 items-center gap-3 border-b border-gray-200 px-4 dark:border-zinc-800">
             <div className="flex items-center gap-2">
-              <Avatar className="h-9 w-9">
-                <AvatarImage
-                  src={otherParticipant?.image ?? undefined}
-                  alt={otherParticipant?.username ?? ''}
-                />
-                <AvatarFallback className="bg-primary/10 hover:bg-primary/10">
-                  {otherParticipant?.username?.slice(0, 1).toUpperCase() || '?'}
-                </AvatarFallback>
-              </Avatar>
+              <UserAvatar image={otherParticipant?.image ?? null} />
               <div className="font-medium">{otherParticipant?.username ?? 'Unknown User'}</div>
             </div>
             <Button

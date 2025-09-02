@@ -8,7 +8,7 @@ import superjson from 'superjson'
 
 type AppRouterOutputs = inferRouterOutputs<AppRouter>
 
-export type GetChatsOutput = AppRouterOutputs['chatQueries']['getChats']
+export type GetAllChatsOutput = AppRouterOutputs['chatQueries']['getAllChats']
 export type GetChatByIdOutput = AppRouterOutputs['chatQueries']['getChatById']
 
 export const queryClient = new QueryClient({

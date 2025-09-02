@@ -1,6 +1,6 @@
 # Echo Messenger
 
-A real-time messaging app inspired by WhatsApp featuring direct messages (for now). Built with Next.js 15 App Router, a Bun + Hono server, and Socket.IO.
+A real-time messaging app featuring direct messages (for now). Built with Next.js 15 App Router, a Bun + Hono server, and Socket.IO.
 
 ## Features
 

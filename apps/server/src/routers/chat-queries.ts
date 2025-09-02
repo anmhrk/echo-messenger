@@ -27,7 +27,7 @@ export const chatQueriesRouter = {
       })
     }),
 
-  getChats: protectedProcedure
+  getAllChats: protectedProcedure
     .input(
       z.object({
         userId: z.string(),
@@ -138,14 +138,11 @@ export const chatQueriesRouter = {
 
       return {
         id: chat.id,
-        lastMessageContent:
-          chat.messages.find((m) => m.sentAt?.getTime?.() === chat.lastMessageSentAt?.getTime?.())
-            ?.content ?? null, // needed to update the chat list cache
         chatParticipants: chat.chatParticipants.map((cp) => ({
           id: cp.user.id,
           image: cp.user.image,
           username: cp.user.username,
-        })), // needed to send the chat detail to participating clients
+        })),
         messages: chat.messages.map((m) => ({
           id: m.id,
           content: m.content,
